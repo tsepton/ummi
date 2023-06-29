@@ -31,11 +31,11 @@ namespace Ummi.Runtime.Speech.SBert {
       }
     }
 
-    // FIXME: absolute path
     public SBertModel(bool useGpu = false) :
       base(modelPath, useGpu) { }
     
-    public const string  modelPath = "Assets/Packages/ummi/Runtime/Speech/SBert/ONNX/model.onnx";
-    public const string  vocabularyFilePath = "Assets/Packages/ummi/Runtime/Speech/SBert/ONNX/vocab.txt";
+    // FIXME: absolute path
+    public const string  modelPath = "Assets/Packages/tsepton.ummi/Runtime/Speech/SBert/ONNX/model.onnx";
+    public const string  vocabularyFilePath = "Assets/Packages/tsepton.ummi/Runtime/Speech/SBert/ONNX/vocab.txt";
   }
 }

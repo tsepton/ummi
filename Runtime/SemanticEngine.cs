@@ -14,9 +14,9 @@ namespace Ummi.Runtime {
     /// <summary>
     /// Gives a semantic engine responsible for choosing the most appropriate MMI registered method.
     /// </summary>
-    public SemanticEngine() {
+    public SemanticEngine(Type[] classes) {
       _organizer = Config.GetModelOrganizer();
-      AttributeParser attributeParser = new AttributeParser(_organizer);
+      AttributeParser attributeParser = new AttributeParser(classes, _organizer);
       _corpus = attributeParser.Methods;
     }
 
@@ -31,7 +31,6 @@ namespace Ummi.Runtime {
     ///   A value between -1 and 1 which defines what CosSim value is considered good enough for the most suitable
     ///   method to be called.
     /// </param>
-    [CanBeNull]
     public MethodInfo Infer(string text, float threshold = 0.65f) {
       // TODO: we only take the first string into account for now
       var similarities = _corpus
@@ -41,7 +40,7 @@ namespace Ummi.Runtime {
         .Reverse()
         .ToArray();
 
-      Debug.Log($"Found {similarities.Length} method(s), with a threshold of {threshold}");
+      Debug.Log($"Found {similarities.Length} method(s), with a minimum threshold of {threshold}");
       if (similarities.Length == 0) return null;
       Debug.Log($"Invoking: {similarities[0].method} ({similarities[0].score})");
       similarities[0].method.Invoke();

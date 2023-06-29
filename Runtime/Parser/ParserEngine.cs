@@ -15,8 +15,10 @@ namespace Ummi.Runtime.Parser {
     public RegisteredMMIMethod[] StaticMethods => _methods.Where(m => m.Info.IsStatic).ToArray();
     public RegisteredMMIMethod[] ConcreteMethods => _methods.Where(m => !m.Info.IsAbstract).ToArray();
 
-    public AttributeParser(IModelOrganizer model) {
-      var extractedMethods = TypeCache.GetMethodsWithAttribute<MultimodalInterface>();
+    public AttributeParser(Type[] classes, IModelOrganizer model) {
+      var extractedMethods = TypeCache
+        .GetMethodsWithAttribute<MultimodalInterface>()
+        .Where(method => classes.Contains(method.DeclaringType)) ;
 
       List<RegisteredMMIMethod> methods = new List<RegisteredMMIMethod>();
       foreach (var (method, i) in extractedMethods.Select((value, i) => (value, i))) {
