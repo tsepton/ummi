@@ -7,9 +7,9 @@
 ## Requirements
 This project uses .NET packages  
 ```bash
-$ dotnet package Microsoft.ML
+$ dotnet add package Microsoft.ML
 $ dotnet add package Microsoft.ML.OnnxRuntime
-$ dotnet adaddd package Microsoft.ML.OnnxTransformer
+$ dotnet add package Microsoft.ML.OnnxTransformer
 ```
 
 ## License
