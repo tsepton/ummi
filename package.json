@@ -1,0 +1,23 @@
+{
+    "name": "be.tsepton.ummi",
+    "version": "0.0.0",
+    "displayName": "Unity Multimodal Interface",
+    "description": "Ummi is a tool to help developer create Multimodal User Interface",
+    "unity": "2019.1",
+    "unityRelease": "0b5",
+    "documentationUrl": "https://ummi.tsepton.be/",
+    "changelogUrl": "https://ummi.tsepton.be/changelog.html",
+    "licensesUrl": "https://ummi.tsepton.be/licensing.html",
+    "dependencies": {    },
+   "keywords": [
+      "Multimodal",
+      "MMI",
+      "MUI"
+    ],
+    "author": {
+      "name": "Thibaut Septon",
+      "email": "tsepton@gmail.com",
+      "url": "https://ummi.tsepton.be"
+    }
+  }
+  
