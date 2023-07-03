@@ -11,7 +11,7 @@ namespace Ummi.Runtime.Speech.SBert {
   public class SBert : IModelOrganizer {
     private List<string> _vocabulary;
 
-    private readonly CasedTokenizer _tokenizer;
+    private readonly UncasedTokenizer _tokenizer;
     private SBertModel _model;
     // FIXME: these absolutely horrific absolute paths
     public SBert() {
@@ -34,6 +34,7 @@ namespace Ummi.Runtime.Speech.SBert {
     }
 
     public double[] Predict(string question) {
+      // CHeck tokenizations for click and push
       var input = _tokenizer.Encode(SBertShape.SequenceLength, question).ToSBertInput();
       var predictions = _model.Predict(input);
       var outputs = predictions.LastHiddenState.GetValues().ToArray();
@@ -45,7 +46,7 @@ namespace Ummi.Runtime.Speech.SBert {
       // Debug.Log("Attention Mask " + string.Join(", ", input.AttentionMask));
       // Debug.Log("Token Type IDs " + string.Join(", ", input.TokenTypeIds));
       
-      // DEBUG Happening in the following lines (or maybe inside CosSim extension method)
+      // DEBUG Happening in the following lines 
       var outputsPrime = MeanPooling(outputs, input.AttentionMask);
 
       double sum = 0;
