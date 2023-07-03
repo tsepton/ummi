@@ -68,8 +68,10 @@ namespace Ummi.Runtime {
         aMagnitude += Math.Pow(a[i], 2);
         bMagnitude += Math.Pow(b[i], 2);
       }
+      if (aMagnitude == 0 || bMagnitude == 0) throw new ArgumentException("One or both vectors have zero length.");
 
       return dotProduct / (Math.Sqrt(aMagnitude) * Math.Sqrt(bMagnitude));
     }
+
   }
 }

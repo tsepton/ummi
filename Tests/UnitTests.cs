@@ -36,6 +36,25 @@ namespace Ummi.Tests {
     }
 
     [Test]
+    public void TestSBertOutput() {
+      SBert sbert = new SBert();
+      string[] corpus = new[] {
+        "Push this button",
+        "Click this cat"
+      };
+      double[][] corpusOutputs = corpus.Select(c => sbert.Predict(c)).ToArray();
+
+      double[] utter = sbert.Predict("Click this button");
+      foreach (var (result, i) in corpusOutputs.Select((x, i) => (x, i))) {
+        var diff = result.CosSim(utter);
+        // if (i == 0) Assert.AreEqual(diff, 1f);
+        // if (i == 1) Assert.IsFalse(Math.Abs(diff - 1) < 0.01f);
+        // Debug.Log($"CosSim: {diff} \nChatGPT: {result.ComputeCosineSimilarity(utter)}");
+        ;
+      }
+    }
+
+    [Test]
     public void TestSBertOverall() {
       SBert sbert = new SBert();
 
@@ -156,6 +175,45 @@ namespace Ummi.Tests {
       method = se.Infer("Order this item", threshold: 1f);
       if (method != null) Assert.AreEqual("OrderThisItem", method.Name);
       else throw new NullReferenceException("No matching MMI registered method was found");
+    }
+
+    [Test]
+    public void ComputeCosineSimilarity_ValidInput_ReturnsExpectedSimilarity() {
+      double[] vector1 = { 1.0, 2.0, 3.0 };
+      double[] vector2 = { 4.0, 5.0, 6.0 };
+      double expectedSimilarity = 0.9746318461970762;
+      double actualSimilarity = vector1.CosSim(vector2);
+      Assert.AreEqual(expectedSimilarity, actualSimilarity, 1e-10);
+    }
+
+    [Test]
+    public void ComputeCosineSimilarity_ZeroVectors_ThrowsArgumentException() {
+      double[] vector1 = { 0.0, 0.0, 0.0 };
+      double[] vector2 = { 0.0, 0.0, 0.0 };
+      Assert.Throws<ArgumentException>(() => vector1.CosSim(vector2));
+    }
+
+    [Test]
+    public void ComputeCosineSimilarity_DifferentVectorLength_ThrowsArgumentException() {
+      double[] vector1 = { 1.0, 2.0, 3.0 };
+      double[] vector2 = { 4.0, 5.0, 6.0, 7.0 };
+      Assert.Throws<ArgumentException>(() => vector1.CosSim(vector2));
+    }
+
+    [Test]
+    public void ComputeCosineSimilarity_OrthogonalVectors_ReturnsSimilarityZero() {
+      double[] vector1 = { 1.0, 0.0 };
+      double[] vector2 = { 0.0, 1.0 };
+      double actualSimilarity = vector1.CosSim(vector2);
+      Assert.AreEqual(0.0, actualSimilarity, 1e-10);
+    }
+
+    [Test]
+    public void ComputeCosineSimilarity_OppositeDirectionVectors_ReturnsSimilarityMinusOne() {
+      double[] vector1 = { 1.0, 2.0, 3.0 };
+      double[] vector2 = { -1.0, -2.0, -3.0 };
+      double actualSimilarity = vector1.CosSim(vector2);
+      Assert.AreEqual(-1.0, actualSimilarity, 1e-10);
     }
   }
 }
