@@ -36,22 +36,11 @@ namespace Ummi.Tests {
     }
 
     [Test]
-    public void TestSBertOutput() {
+    public void TestSBertUncasedOutputs() {
       SBert sbert = new SBert();
-      string[] corpus = new[] {
-        "Push this button",
-        "Click this cat"
-      };
-      double[][] corpusOutputs = corpus.Select(c => sbert.Predict(c)).ToArray();
-
-      double[] utter = sbert.Predict("Click this button");
-      foreach (var (result, i) in corpusOutputs.Select((x, i) => (x, i))) {
-        var diff = result.CosSim(utter);
-        // if (i == 0) Assert.AreEqual(diff, 1f);
-        // if (i == 1) Assert.IsFalse(Math.Abs(diff - 1) < 0.01f);
-        // Debug.Log($"CosSim: {diff} \nChatGPT: {result.ComputeCosineSimilarity(utter)}");
-        ;
-      }
+      double[] tCased = sbert.Predict("Click this button");
+      double[] tUncased = sbert.Predict("Click tHis buTTon");
+      Assert.AreEqual(tCased, tUncased);
     }
 
     [Test]
@@ -60,8 +49,7 @@ namespace Ummi.Tests {
 
       double[][] corpusOutputs = _corpus.Select(c => sbert.Predict(c)).ToArray();
       double[][] utterancesOutputs = _utterances.Select(utter => sbert.Predict(utter)).ToArray();
-
-
+      
       foreach (var (i, c) in corpusOutputs.Select((value, i) => (i, value))) {
         foreach (var (j, u) in utterancesOutputs.Select((value, i) => (i, value))) {
           Debug.Log($"{i} - {j}: {c.CosSim(u)}");
