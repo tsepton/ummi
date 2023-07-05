@@ -12,8 +12,8 @@ namespace Ummi.Runtime {
       _facts.AddLast(fact);
     }
 
-    public Fact[] GetFacts(TimeSpan fromXSecondsAgo) {
-      return _facts.Where(f => f.Timestamp > DateTime.UtcNow.Subtract(fromXSecondsAgo)).ToArray();
+    public Fact[] GetFacts(TimeSpan seconds) {
+      return _facts.Where(f => f.Timestamp > DateTime.UtcNow.Subtract(seconds)).ToArray();
     }
 
     public Fact[] GetFacts() {
