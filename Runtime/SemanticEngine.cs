@@ -38,7 +38,7 @@ namespace Ummi.Runtime {
     ///   A value between -1 and 1 which defines what CosSim value is considered good enough for the most suitable
     ///   method to be called.
     /// </param>
-    public MethodInfo Infer(string text, float threshold = 0.65f) {
+    public AttributeParser.RegisteredMMIMethod Infer(string text, float threshold = 0.65f) {
       // TODO: we only take the first string into account for now
       var similarities = _corpus
         .Select(method => (method, score: method.Embeddings[0].CosSim(_organizer.Predict(text))))
@@ -49,8 +49,7 @@ namespace Ummi.Runtime {
 
       Debug.Log($"Found {similarities.Length} method(s), with a minimum threshold of {threshold}");
       if (similarities.Length == 0) return null;
-      Debug.Log($"Invoking: {similarities[0].method} ({similarities[0].score})");
-      return similarities[0].method.Info;
+      return similarities[0].method;
     }
   }
 

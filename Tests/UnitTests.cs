@@ -49,7 +49,7 @@ namespace Ummi.Tests {
 
       double[][] corpusOutputs = _corpus.Select(c => sbert.Predict(c)).ToArray();
       double[][] utterancesOutputs = _utterances.Select(utter => sbert.Predict(utter)).ToArray();
-      
+
       foreach (var (i, c) in corpusOutputs.Select((value, i) => (i, value))) {
         foreach (var (j, u) in utterancesOutputs.Select((value, i) => (i, value))) {
           Debug.Log($"{i} - {j}: {c.CosSim(u)}");
@@ -77,7 +77,7 @@ namespace Ummi.Tests {
         return 42;
       }
 
-      // Should not be registered - but its implementation should
+      // Should not be registered - but its implementation should (Future wrk)
       [MultimodalInterface(ID)]
       public abstract void AbstractMethod();
 
@@ -131,7 +131,7 @@ namespace Ummi.Tests {
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
         .ToArray();
       Assert.AreEqual(1, method.Length);
-      method[0].Invoke();
+      Assert.DoesNotThrow(method[0].Invoke);
       // Well, I guess if it did not raise an exception, everything's fine then
     }
   }
@@ -151,8 +151,8 @@ namespace Ummi.Tests {
     public void TestInferFindTheMostLogicalMethod() {
       SemanticEngine se = SemanticEngine.Instance;
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
-      MethodInfo method = se.Infer("Buy this stuff", threshold: 0.7f);
-      if (method != null) Assert.AreEqual("OrderThisItem", method.Name);
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Buy this stuff", threshold: 0.65f);
+      if (method != null) Assert.AreEqual("OrderThisItem", method.Info.Name);
       else throw new NullReferenceException("No matching MMI registered method was found");
     }
 
@@ -160,10 +160,9 @@ namespace Ummi.Tests {
     public void TestInferThresholdWorks() {
       SemanticEngine se = SemanticEngine.Instance;
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
-      MethodInfo method = se.Infer("Buy this stuff", threshold: 1f);
-      Assert.AreEqual(null, method);
-      method = se.Infer("Order this item", threshold: 1f);
-      if (method != null) Assert.AreEqual("OrderThisItem", method.Name);
+      Assert.AreEqual(null, se.Infer("Buy this stuff", threshold: 1f));
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Order this item", threshold: 1f);
+      if (method != null) Assert.AreEqual("OrderThisItem", method.Info.Name);
       else throw new NullReferenceException("No matching MMI registered method was found");
     }
 

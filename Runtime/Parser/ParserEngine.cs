@@ -5,6 +5,7 @@ using System.Reflection;
 using Ummi.Runtime.Speech;
 using UnityEditor;
 using UnityEngine;
+using Object = System.Object;
 
 namespace Ummi.Runtime.Parser {
   public class AttributeParser {
@@ -18,32 +19,15 @@ namespace Ummi.Runtime.Parser {
     public AttributeParser(Type[] classes, IModelOrganizer model) {
       var extractedMethods = TypeCache
         .GetMethodsWithAttribute<MultimodalInterface>()
-        .Where(method => classes.Contains(method.DeclaringType)) ;
+        .Where(method => classes.Contains(method.DeclaringType));
 
       List<RegisteredMMIMethod> methods = new List<RegisteredMMIMethod>();
-      foreach (var (method, i) in extractedMethods.Select((value, i) => (value, i))) {
-        if (method.IsPrivate) {
-          Debug.LogWarning($"'{method.Name}' is a private method, it will not be registered.");
-          continue;
-        }
-
-        if (method.ReturnType != typeof(void)) {
-          Debug.LogWarning($"'{method.Name}' returns a value, it will not be registered.");
-          continue;
-        }
-
-        // TODO - future works
-        if (method.IsAbstract) {
-          Debug.LogWarning($"'{method.Name}' is an abstract method, it will not be registered.");
-          continue;
-        }
-
-        // TODO - future works
-        if (!method.IsStatic) {
-          Debug.LogWarning($"'{method.Name}' is not a static method, it will not be registered.");
-          continue;
-        }
-
+      var x = extractedMethods
+        .Where(m => !m.IsPrivate)
+        .Where(m => m.ReturnType == typeof(void))
+        .Where(m => !m.IsAbstract)
+        .Where(m => m.IsStatic); // Future work
+      foreach (var method in x) {
         string[] utters = method.GetCustomAttribute<MultimodalInterface>().Utterances;
         methods.Add(new RegisteredMMIMethod(method, model.Predict(utters), utters));
       }
@@ -52,23 +36,23 @@ namespace Ummi.Runtime.Parser {
     }
 
     public class RegisteredMMIMethod {
-      // TODO - Action are parameterless methods
-      private readonly Action _action;
-
-      public MethodInfo Info => _action.Method;
+      public MethodInfo Info { get; }
       public double[][] Embeddings { get; }
       public string[] Utters { get; }
 
 
       public RegisteredMMIMethod(MethodInfo method, double[][] embeddings, string[] utters) {
-        _action = (Action)Delegate.CreateDelegate(typeof(Action), method);
+        Info = method;
         Embeddings = embeddings;
         Utters = utters;
       }
 
       public void Invoke() {
-        if (Info.IsStatic) _action.Invoke();
-        else Debug.LogWarning("Non static methods are not yet supported");
+        Invoke(new object[] {});
+      }
+      
+      public void Invoke(Object[] args) {
+        Info.Invoke(null, args);
       }
 
       public override string ToString() {
