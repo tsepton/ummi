@@ -149,7 +149,8 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestInferFindTheMostLogicalMethod() {
-      SemanticEngine se = new SemanticEngine(new[] { typeof(MmiApiRegistrationExample) });
+      SemanticEngine se = SemanticEngine.Instance;
+      se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MethodInfo method = se.Infer("Buy this stuff", threshold: 0.7f);
       if (method != null) Assert.AreEqual("OrderThisItem", method.Name);
       else throw new NullReferenceException("No matching MMI registered method was found");
@@ -157,7 +158,8 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestInferThresholdWorks() {
-      SemanticEngine se = new SemanticEngine(new[] { typeof(MmiApiRegistrationExample) });
+      SemanticEngine se = SemanticEngine.Instance;
+      se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MethodInfo method = se.Infer("Buy this stuff", threshold: 1f);
       Assert.AreEqual(null, method);
       method = se.Infer("Order this item", threshold: 1f);

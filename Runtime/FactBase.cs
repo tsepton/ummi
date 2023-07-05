@@ -5,6 +5,11 @@ using UnityEngine;
 
 namespace Ummi.Runtime {
   public class FactBase {
+    private static readonly Lazy<FactBase> Lazy = new Lazy<FactBase>(() => new FactBase());
+
+    public static FactBase Instance => Lazy.Value;
+
+    private FactBase() { }
 
     private LinkedList<Fact> _facts = new LinkedList<Fact>();
 
@@ -19,11 +24,9 @@ namespace Ummi.Runtime {
     public Fact[] GetFacts() {
       return _facts.ToArray();
     }
-
   }
 
   public class Fact {
-    
     private DateTime _timestamp;
     private GameObject _target;
 
@@ -37,7 +40,6 @@ namespace Ummi.Runtime {
 
     public static Fact FromGameObject(GameObject go) {
       return new Fact(go, DateTime.UtcNow);
-    } 
-    
+    }
   }
 }
