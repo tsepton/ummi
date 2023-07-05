@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using Ummi.Runtime.Parser;
 
 namespace Ummi.Runtime {
@@ -9,7 +11,12 @@ namespace Ummi.Runtime {
     private FusionEngine() { }
 
     public void Complete(AttributeParser.RegisteredMMIMethod method) {
-      
+      ParameterInfo[] parameters = method.Info.GetParameters();
+      foreach (var param in parameters) {
+        var potentialCompletion = FactBase.Instance.GetFacts()
+          .Where(fact => fact.Target.GetType() == param.ParameterType);
+          
+      }
     }
   }
 }
