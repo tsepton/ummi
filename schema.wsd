@@ -1,0 +1,85 @@
+@startuml
+
+
+|Développement|
+
+:Ensemble de méthodes constituant 
+l'interface multimodale;
+|#AntiqueWhite|Lancement de l'application|
+:Extraction de l'embedding pour 
+chaque méthode constituant l'interface;
+note right
+  Un embedding est un 
+  vecteur représentant
+  la sémantique de la méthode.
+end note
+:Base de donnée constituée de 
+chaque méthode et de son embedding;
+detach 
+
+|Runtime|
+:Input de l'utilisateur;
+fork
+    if (:Voix;) then
+        :Extraction de l'embedding;
+        :Comparaison avec la base de donnée 
+        des emebddings extraite des méthodes;
+        note left
+            Les embeddings étant 
+            des vecteurs, il est 
+            possible de les comparer
+            entre eux. Ainsi, deux
+            phrases ayant la même
+            sémantique mais pourtant
+            différentes auront une
+            forte similarité. Cela
+            permet de ne pas restreindre
+            l'utilisateur à une phrase
+            précise et ainsi
+            de permettre l'utilisation
+            d'un langage naturel. 
+        end note
+        if (:Similarité cosinus > threshold;) then (yes)  
+            :Une correspondance est trouvée 
+            entre ce qu'exprime l'utilisateur
+            et l'interface multimodale mise 
+            à sa disposition.|
+            note left
+                Si méthode ne possède 
+                pas de paramètre, elle
+                peut être appelée.
+                Sinon, un algorithme
+                de fusion mutlimodale
+                tentera de fournir 
+                les arguments de la
+                méthode en puisant dans
+                la factbase constituée
+                à partir des autres 
+                modalitées.
+            end note
+            detach
+        else (no) 
+            :Aucune correspondance 
+            trouvée;
+        detach
+        endif
+    else 
+        :Processing;
+    endif
+fork again
+   :Geste;
+   :Processing;
+fork again
+   :Regard;
+   :Processing;
+fork again
+   :Charge cognitive;
+   :Processing;
+fork again
+   :etc.;
+   :Processing;
+end fork
+:Constitution d'une factbase qui regroupe 
+toutes les données de toutes les modalitées|
+
+@enduml
