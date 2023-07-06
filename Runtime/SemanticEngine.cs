@@ -8,20 +8,27 @@ using UnityEngine;
 
 namespace Ummi.Runtime {
   public class SemanticEngine {
+    
+    // Singleton
+    private static readonly Lazy<SemanticEngine> Lazy = new Lazy<SemanticEngine>(() => new SemanticEngine()); 
+    public static SemanticEngine Instance => Lazy.Value;
+    private SemanticEngine() { }
+
     private IModelOrganizer _organizer;
     private AttributeParser.RegisteredMMIMethod[] _corpus;
 
     /// <summary>
-    /// Gives a semantic engine responsible for choosing the most appropriate MMI registered method.
+    /// Register the methods marked inside the different <paramref name="classes"/>
     /// </summary>
-    public SemanticEngine(Type[] classes) {
+    /// <param name="classes">Type of the classes that have MMI methods to be registered</param>
+    public void Register(Type[] classes) {
       _organizer = Config.GetModelOrganizer();
       AttributeParser attributeParser = new AttributeParser(classes, _organizer);
       _corpus = attributeParser.Methods;
     }
 
     /// <summary>
-    /// Finds, Invoke and return the most suitable MMI registered method to call based on the CosSim between its MMI string
+    /// Returns the most suitable MMI registered method to call based on the CosSim between its MMI string
     /// description and `text` param.
     /// If multiple methods are found, the one with the highest CosSim score is preferred.
     /// If no method are suitable, null is returned.
@@ -31,7 +38,7 @@ namespace Ummi.Runtime {
     ///   A value between -1 and 1 which defines what CosSim value is considered good enough for the most suitable
     ///   method to be called.
     /// </param>
-    public MethodInfo Infer(string text, float threshold = 0.65f) {
+    public AttributeParser.RegisteredMMIMethod Infer(string text, float threshold = 0.65f) {
       // TODO: we only take the first string into account for now
       var similarities = _corpus
         .Select(method => (method, score: method.Embeddings[0].CosSim(_organizer.Predict(text))))
@@ -42,9 +49,7 @@ namespace Ummi.Runtime {
 
       Debug.Log($"Found {similarities.Length} method(s), with a minimum threshold of {threshold}");
       if (similarities.Length == 0) return null;
-      Debug.Log($"Invoking: {similarities[0].method} ({similarities[0].score})");
-      similarities[0].method.Invoke();
-      return similarities[0].method.Info;
+      return similarities[0].method;
     }
   }
 
@@ -68,10 +73,10 @@ namespace Ummi.Runtime {
         aMagnitude += Math.Pow(a[i], 2);
         bMagnitude += Math.Pow(b[i], 2);
       }
+
       if (aMagnitude == 0 || bMagnitude == 0) throw new ArgumentException("One or both vectors have zero length.");
 
       return dotProduct / (Math.Sqrt(aMagnitude) * Math.Sqrt(bMagnitude));
     }
-
   }
 }
