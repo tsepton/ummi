@@ -31,7 +31,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestModelTrainingNotNull() {
-      IModelOrganizer model = Config.GetModelOrganizer();
+      IModelOrganizer model = Config.Organizer();
       Assert.IsNotNull(model);
     }
 
@@ -88,7 +88,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestConcreteMethodRegistration() {
-      IModelOrganizer organizer = Config.GetModelOrganizer();
+      IModelOrganizer organizer = Config.Organizer();
       AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
       Assert.AreEqual(1, attributeParser.ConcreteMethods // Note: static member is also concrete here
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
@@ -97,7 +97,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestAbstractMethodRegistration() {
-      IModelOrganizer organizer = Config.GetModelOrganizer();
+      IModelOrganizer organizer = Config.Organizer();
       AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
       Assert.AreEqual(0, attributeParser.AbstractMethods
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
@@ -106,7 +106,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestStaticMethodRegistration() {
-      IModelOrganizer organizer = Config.GetModelOrganizer();
+      IModelOrganizer organizer = Config.Organizer();
       AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
       Assert.AreEqual(1, attributeParser.StaticMethods
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
@@ -115,7 +115,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestPrivateMethodRegistration() {
-      IModelOrganizer organizer = Config.GetModelOrganizer();
+      IModelOrganizer organizer = Config.Organizer();
       AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
       Assert.AreEqual(0, attributeParser.StaticMethods
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
@@ -125,7 +125,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestStaticMethodInvoke() {
-      IModelOrganizer organizer = Config.GetModelOrganizer();
+      IModelOrganizer organizer = Config.Organizer();
       AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
       var method = attributeParser.StaticMethods
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
@@ -149,7 +149,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestInferFindTheMostLogicalMethod() {
-      SemanticEngine se = SemanticEngine.Instance;
+      SemanticEngine se = new SemanticEngine();
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       AttributeParser.RegisteredMMIMethod method = se.Infer("Buy this stuff", threshold: 0.65f);
       if (method != null) Assert.AreEqual("OrderThisItem", method.Info.Name);
@@ -158,7 +158,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestInferThresholdWorks() {
-      SemanticEngine se = SemanticEngine.Instance;
+      SemanticEngine se = new SemanticEngine();
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       Assert.AreEqual(null, se.Infer("Buy this stuff", threshold: 1f));
       AttributeParser.RegisteredMMIMethod method = se.Infer("Order this item", threshold: 1f);

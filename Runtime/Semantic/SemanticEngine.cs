@@ -7,12 +7,8 @@ using Ummi.Runtime.Speech;
 using UnityEngine;
 
 namespace Ummi.Runtime {
-  public class SemanticEngine {
-    
-    // Singleton
-    private static readonly Lazy<SemanticEngine> Lazy = new Lazy<SemanticEngine>(() => new SemanticEngine()); 
-    public static SemanticEngine Instance => Lazy.Value;
-    private SemanticEngine() { }
+  public class SemanticEngine: ISemanticEngine {
+    public SemanticEngine() { }
 
     private IModelOrganizer _organizer;
     private AttributeParser.RegisteredMMIMethod[] _corpus;
@@ -22,7 +18,7 @@ namespace Ummi.Runtime {
     /// </summary>
     /// <param name="classes">Type of the classes that have MMI methods to be registered</param>
     public void Register(Type[] classes) {
-      _organizer = Config.GetModelOrganizer();
+      _organizer = Config.Organizer();
       AttributeParser attributeParser = new AttributeParser(classes, _organizer);
       _corpus = attributeParser.Methods;
     }
