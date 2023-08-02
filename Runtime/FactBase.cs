@@ -11,35 +11,33 @@ namespace Ummi.Runtime {
 
     private FactBase() { }
 
-    private LinkedList<Fact> _facts = new LinkedList<Fact>();
+    private LinkedList<Fact<object>> _facts = new();
 
-    public void Add(Fact fact) {
+    public void Add(Fact<object> fact) {
       _facts.AddLast(fact);
     }
-
-    public Fact[] GetFacts(TimeSpan seconds) {
+    
+    public Fact<object>[] GetFacts(TimeSpan seconds) {
       return _facts.Where(f => f.Timestamp > DateTime.UtcNow.Subtract(seconds)).ToArray();
     }
 
-    public Fact[] GetFacts() {
+    public Fact<object>[] GetFacts() {
       return _facts.ToArray();
     }
   }
 
-  public class Fact {
-    private DateTime _timestamp;
-    private GameObject _target;
+  public class Fact<T> {
+    public DateTime Timestamp { get; }
 
-    public DateTime Timestamp => _timestamp;
-    public GameObject Target => _target;
+    public T Value { get; }
 
-    private Fact(GameObject go, DateTime timestamp) {
-      _target = go;
-      _timestamp = timestamp;
+    public Fact(T value) {
+      Value = value;
+      Timestamp = DateTime.UtcNow;
     }
 
-    public static Fact FromGameObject(GameObject go) {
-      return new Fact(go, DateTime.UtcNow);
+    public override string ToString() {
+      return $"Fact happened at {Timestamp}: {Value}";
     }
   }
 }

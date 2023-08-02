@@ -5,6 +5,7 @@ using System.Reflection;
 using Ummi.Runtime.Speech;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Assertions;
 using Object = System.Object;
 
 namespace Ummi.Runtime.Parser {
@@ -22,12 +23,12 @@ namespace Ummi.Runtime.Parser {
         .Where(method => classes.Contains(method.DeclaringType));
 
       List<RegisteredMMIMethod> methods = new List<RegisteredMMIMethod>();
-      var x = extractedMethods
+      var extracted = extractedMethods
         .Where(m => !m.IsPrivate)
         .Where(m => m.ReturnType == typeof(void))
         .Where(m => !m.IsAbstract)
         .Where(m => m.IsStatic); // Future work
-      foreach (var method in x) {
+      foreach (var method in extracted) {
         string[] utters = method.GetCustomAttribute<MultimodalInterface>().Utterances;
         methods.Add(new RegisteredMMIMethod(method, model.Predict(utters), utters));
       }
@@ -39,12 +40,15 @@ namespace Ummi.Runtime.Parser {
       public MethodInfo Info { get; }
       public double[][] Embeddings { get; }
       public string[] Utters { get; }
-
-
+      
       public RegisteredMMIMethod(MethodInfo method, double[][] embeddings, string[] utters) {
         Info = method;
         Embeddings = embeddings;
         Utters = utters;
+      }
+
+      public int GetNumberOfParameters() {
+        return Info.GetParameters().Length;
       }
 
       public void Invoke() {
@@ -52,6 +56,7 @@ namespace Ummi.Runtime.Parser {
       }
       
       public void Invoke(Object[] args) {
+        Assert.AreEqual(args.Length, GetNumberOfParameters());
         Info.Invoke(null, args);
       }
 

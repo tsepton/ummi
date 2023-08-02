@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
+using Ummi.Runtime.Exceptions;
 using Ummi.Runtime.Parser;
 using Ummi.Runtime.Speech;
 using UnityEngine;
@@ -10,7 +11,6 @@ namespace Ummi.Runtime {
   public class SemanticEngine: ISemanticEngine {
     public SemanticEngine() { }
 
-    private IModelOrganizer _organizer;
     private AttributeParser.RegisteredMMIMethod[] _corpus;
 
     /// <summary>
@@ -18,8 +18,7 @@ namespace Ummi.Runtime {
     /// </summary>
     /// <param name="classes">Type of the classes that have MMI methods to be registered</param>
     public void Register(Type[] classes) {
-      _organizer = Config.Organizer();
-      AttributeParser attributeParser = new AttributeParser(classes, _organizer);
+      AttributeParser attributeParser = new AttributeParser(classes, Config.Organizer);
       _corpus = attributeParser.Methods;
     }
 
@@ -36,8 +35,9 @@ namespace Ummi.Runtime {
     /// </param>
     public AttributeParser.RegisteredMMIMethod Infer(string text, float threshold = 0.65f) {
       // TODO: we only take the first string into account for now
+      if (_corpus == null) throw new NoCorpusException();
       var similarities = _corpus
-        .Select(method => (method, score: method.Embeddings[0].CosSim(_organizer.Predict(text))))
+        .Select(method => (method, score: method.Embeddings[0].CosSim(Config.Organizer.Predict(text))))
         .Where(item => item.score >= threshold)
         .OrderBy(item => item.score)
         .Reverse()

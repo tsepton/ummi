@@ -7,7 +7,9 @@ using Ummi.Runtime.Parser;
 using Ummi.Runtime.Speech;
 using Ummi.Runtime.Speech.SBert;
 using Ummi.Runtime;
+using Ummi.Runtime.Exceptions;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Ummi.Tests {
   public class TestSpeech {
@@ -31,7 +33,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestModelTrainingNotNull() {
-      IModelOrganizer model = Config.Organizer();
+      IModelOrganizer model = Config.Organizer;
       Assert.IsNotNull(model);
     }
 
@@ -88,7 +90,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestConcreteMethodRegistration() {
-      IModelOrganizer organizer = Config.Organizer();
+      IModelOrganizer organizer = Config.Organizer;
       AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
       Assert.AreEqual(1, attributeParser.ConcreteMethods // Note: static member is also concrete here
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
@@ -97,7 +99,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestAbstractMethodRegistration() {
-      IModelOrganizer organizer = Config.Organizer();
+      IModelOrganizer organizer = Config.Organizer;
       AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
       Assert.AreEqual(0, attributeParser.AbstractMethods
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
@@ -106,7 +108,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestStaticMethodRegistration() {
-      IModelOrganizer organizer = Config.Organizer();
+      IModelOrganizer organizer = Config.Organizer;
       AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
       Assert.AreEqual(1, attributeParser.StaticMethods
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
@@ -115,7 +117,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestPrivateMethodRegistration() {
-      IModelOrganizer organizer = Config.Organizer();
+      IModelOrganizer organizer = Config.Organizer;
       AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
       Assert.AreEqual(0, attributeParser.StaticMethods
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
@@ -125,7 +127,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestStaticMethodInvoke() {
-      IModelOrganizer organizer = Config.Organizer();
+      IModelOrganizer organizer = Config.Organizer;
       AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
       var method = attributeParser.StaticMethods
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
@@ -203,6 +205,54 @@ namespace Ummi.Tests {
       double[] vector2 = { -1.0, -2.0, -3.0 };
       double actualSimilarity = vector1.CosSim(vector2);
       Assert.AreEqual(-1.0, actualSimilarity, 1e-10);
+    }
+
+    [Test]
+    public void ThrowsErrorIfNoCorpusGiven() {
+      SemanticEngine se = new SemanticEngine();
+      Assert.That(() => se.Infer(""), Throws.TypeOf<NoCorpusException>());
+    }
+  }
+
+  public class TestFusion {
+    abstract class MmiApiRegistrationExample {
+      [MultimodalInterface("Order this item")]
+      public static void OrderThisItem(Color item) {
+        Debug.Log("-------------");
+        Debug.Log(item);
+        Debug.Log("-------------");
+      }
+    }
+
+    [Test]
+    public void TestBaseFusion() {
+      Config.SemanticEngine.Register(new[] { typeof(MmiApiRegistrationExample) });
+      Fact<object> fact = new Fact<object>(new GameObject());
+      // FIXME : this is not rightly typed...
+      FactBase.Instance.Add(fact);
+      AttributeParser.RegisteredMMIMethod method = Config.SemanticEngine.Infer("Order this thing");
+      Assert.IsNotNull(method);
+      Assert.IsTrue(Config.FusionEngine.Call(method));
+    }
+    
+    [Test]
+    public void TestNoFusionOccurs_NoFact() {
+      Config.SemanticEngine.Register(new[] { typeof(MmiApiRegistrationExample) });
+      // Fact<System.Object> fact = new Fact<System.Object>(new GameObject("Test"));
+      // FactBase.Instance.Add(fact);
+      AttributeParser.RegisteredMMIMethod method = Config.SemanticEngine.Infer("Order this thing");
+      Assert.IsNotNull(method);
+      Assert.IsFalse(Config.FusionEngine.Call(method));
+    }
+
+    [Test]
+    public void TestNoFusionOccurs_NoCorrectlyTypedFact() {
+      Config.SemanticEngine.Register(new[] { typeof(MmiApiRegistrationExample) });
+      Fact<System.Object> fact = new Fact<System.Object>(new Object());
+      FactBase.Instance.Add(fact);
+      AttributeParser.RegisteredMMIMethod method = Config.SemanticEngine.Infer("Order this thing");
+      Assert.IsNotNull(method);
+      Assert.IsFalse(Config.FusionEngine.Call(method));
     }
   }
 }
