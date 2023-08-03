@@ -14,8 +14,15 @@ namespace Ummi.Runtime {
     public void Add(object obj) {
       _facts.AddLast(new Fact<object>(obj));
     }
-    
-    public Fact<object>[] GetFacts(TimeSpan seconds) {
+
+    /// <summary>
+    /// This should not be called. This is for testing reason mainly.
+    /// </summary>
+    public void Clear() {
+      _facts.Clear();
+    }
+
+      public Fact<object>[] GetFacts(TimeSpan seconds) {
       return _facts.Where(f => f.Timestamp > DateTime.UtcNow.Subtract(seconds)).ToArray();
     }
 
