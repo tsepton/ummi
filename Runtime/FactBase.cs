@@ -8,13 +8,11 @@ namespace Ummi.Runtime {
     private static readonly Lazy<FactBase> Lazy = new Lazy<FactBase>(() => new FactBase());
 
     public static FactBase Instance => Lazy.Value;
-
     private FactBase() { }
-
     private LinkedList<Fact<object>> _facts = new();
 
-    public void Add(Fact<object> fact) {
-      _facts.AddLast(fact);
+    public void Add(object obj) {
+      _facts.AddLast(new Fact<object>(obj));
     }
     
     public Fact<object>[] GetFacts(TimeSpan seconds) {

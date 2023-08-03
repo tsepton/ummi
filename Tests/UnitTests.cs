@@ -217,29 +217,44 @@ namespace Ummi.Tests {
   public class TestFusion {
     abstract class MmiApiRegistrationExample {
       [MultimodalInterface("Order this item")]
-      public static void OrderThisItem(Color item) {
-        Debug.Log("-------------");
-        Debug.Log(item);
-        Debug.Log("-------------");
+      public static void OrderThisItem(GameObject item) {
+        Debug.Log($"--------- {item} ---------");
+      }
+
+      public static ItemMockup Car = new ItemMockup("car", 20000, 1);
+      public static ItemMockup Bus = new ItemMockup("bus", 50000, 2);
+
+      [MultimodalInterface("Check Items Inferred Are Correct")]
+      public static void CheckItemsInferredAreCorrect(ItemMockup item1, ItemMockup item2) {
+        Assert.IsTrue(item1.id == Car.id);
+        Assert.IsTrue(item2.id == Bus.id);
+      }
+    }
+
+    class ItemMockup {
+      public string Name;
+      public int Price;
+      public int id;
+
+      public ItemMockup(string name, int price, int id) {
+        this.Name = name;
+        this.Price = price;
+        this.id = id;
       }
     }
 
     [Test]
     public void TestBaseFusion() {
       Config.SemanticEngine.Register(new[] { typeof(MmiApiRegistrationExample) });
-      Fact<object> fact = new Fact<object>(new GameObject());
-      // FIXME : this is not rightly typed...
-      FactBase.Instance.Add(fact);
+      FactBase.Instance.Add(new GameObject());
       AttributeParser.RegisteredMMIMethod method = Config.SemanticEngine.Infer("Order this thing");
       Assert.IsNotNull(method);
       Assert.IsTrue(Config.FusionEngine.Call(method));
     }
-    
+
     [Test]
     public void TestNoFusionOccurs_NoFact() {
       Config.SemanticEngine.Register(new[] { typeof(MmiApiRegistrationExample) });
-      // Fact<System.Object> fact = new Fact<System.Object>(new GameObject("Test"));
-      // FactBase.Instance.Add(fact);
       AttributeParser.RegisteredMMIMethod method = Config.SemanticEngine.Infer("Order this thing");
       Assert.IsNotNull(method);
       Assert.IsFalse(Config.FusionEngine.Call(method));
@@ -248,11 +263,21 @@ namespace Ummi.Tests {
     [Test]
     public void TestNoFusionOccurs_NoCorrectlyTypedFact() {
       Config.SemanticEngine.Register(new[] { typeof(MmiApiRegistrationExample) });
-      Fact<System.Object> fact = new Fact<System.Object>(new Object());
-      FactBase.Instance.Add(fact);
+      FactBase.Instance.Add(new Object());
       AttributeParser.RegisteredMMIMethod method = Config.SemanticEngine.Infer("Order this thing");
       Assert.IsNotNull(method);
       Assert.IsFalse(Config.FusionEngine.Call(method));
+    }
+
+    [Test]
+    public void TestMultipleArgsCorrectlyInferredFusion() {
+      // Check prints to assure the items were correctly inferred. I don't know how to test this.
+      Config.SemanticEngine.Register(new[] { typeof(MmiApiRegistrationExample) });
+      FactBase.Instance.Add(MmiApiRegistrationExample.Car);
+      FactBase.Instance.Add(MmiApiRegistrationExample.Bus); 
+      AttributeParser.RegisteredMMIMethod method = Config.SemanticEngine.Infer("Check Items Inferred Are Correct");
+      Assert.IsNotNull(method);
+      Assert.IsTrue(Config.FusionEngine.Call(method)); // method has Assert in its body
     }
   }
 }

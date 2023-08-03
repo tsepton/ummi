@@ -16,31 +16,39 @@ namespace Ummi.Runtime {
       if (method.GetNumberOfParameters() == 0) method.Invoke();
       else {
         ParameterInfo[] parameters = method.Info.GetParameters();
-        List<object> args = new List<object>();
-        foreach (var param in parameters) {
-          var facts = GetPotentialCompletionParameters(param);
-          if (facts.Length == 0) break;
-          args.Add(facts.First());
-        }
-
-        Debug.Log(args.Count);
-        if (args.Count == parameters.Length) method.Invoke(args.ToArray());
+        var potentialParameters = GetPotentialCompletionParameters(parameters);
+        if (potentialParameters.Count(x => x != null) == parameters.Length) method.Invoke(potentialParameters);
         else return false;
       }
 
       return true;
     }
 
-    /// <summary>
-    /// Gets the potential facts to complete a method call based on <paramref name="param"/> type.
-    /// </summary>
-    /// <param name="param">The ParameterInfo you need to complete the MethodInfo call</param>
-    /// <returns>An array of Facts ordered by their chronological order of appearance</returns>
-    private Fact<object>[] GetPotentialCompletionParameters(ParameterInfo param) {
-      var potentialCompletion = _factBase.GetFacts()
+    private object[] GetPotentialCompletionParameters(ParameterInfo param) {
+      return _factBase.GetFacts()
         .Where(fact => fact.Value.GetType() == param.ParameterType)
+        .Select(e => e.Value)
+        .Reverse()
         .ToArray();
-      return potentialCompletion;
+    }
+
+    private object[] GetPotentialCompletionParameters(ParameterInfo[] parameters) {
+      Fact<object>[] facts = _factBase.GetFacts(TimeSpan.FromSeconds(4)).ToArray();
+
+      Dictionary<Type, Fact<object>[]> potentialArgsPerType = new();
+      foreach (var type in parameters.Select(p => p.ParameterType).Distinct()) {
+        var potentialFactsForType = facts.Where(x => x.Value.GetType() == type);
+        potentialArgsPerType.Add(type, potentialFactsForType.ToArray());
+      }
+
+      List<Fact<object>> mostSuitableFacts = new();
+      foreach (var param in parameters) {
+        var fact = potentialArgsPerType[param.ParameterType].DefaultIfEmpty(null)
+          .FirstOrDefault(x => !mostSuitableFacts.Contains(x));
+        if (fact != null) mostSuitableFacts.Add(fact);
+      }
+
+      return mostSuitableFacts.Select(x => x.Value).ToArray();
     }
   }
 }
