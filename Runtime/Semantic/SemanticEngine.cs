@@ -21,6 +21,11 @@ namespace Ummi.Runtime {
       AttributeParser attributeParser = new AttributeParser(classes, Config.Organizer);
       _corpus = attributeParser.Methods;
     }
+    
+    public void Register(Type class_) {
+      AttributeParser attributeParser = new AttributeParser(new []{ class_ }, Config.Organizer);
+      _corpus = attributeParser.Methods;
+    }
 
     /// <summary>
     /// Returns the most suitable MMI registered method to call based on the CosSim between its MMI string
