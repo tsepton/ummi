@@ -8,7 +8,7 @@ namespace ummi.Runtime.Processors {
   /// A processor is a MonoBehavior which process a modality (or a set of modalities)
   /// and infer facts from this modality behavior.
   /// </summary>
-  public class Processor: MonoBehaviour {
+  public abstract class Processor: MonoBehaviour {
 
     /// <summary>
     /// Writes an object to the factbase so it becomes visible to the fusion engine.
