@@ -13,16 +13,18 @@ namespace Ummi.Runtime {
     [Header("Whisper")] public WhisperManager whisper;
     public MicrophoneRecord microphoneRecord;
 
-    [Header("SBert")] public string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
-    public string vocabularyPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+    [Header("SBert")] public string modelPath = Config.DefaultModelPath;
+    public string vocabularyPath = Config.DefaultVocabularyPath;
 
     private ISemanticEngine _semanticEngine; // TODO Needs parameter
     private IFusionEngine _fusionEngine;
     private string _buffer;
 
     private void Awake() {
-      _semanticEngine =
-        (ISemanticEngine)Activator.CreateInstance(Config.SemanticEngine, new ModelPaths(vocabularyPath, modelPath));
+      _semanticEngine = (ISemanticEngine)Activator.CreateInstance(Config.SemanticEngine, new ModelPaths(
+        Path.Combine(Application.streamingAssetsPath, vocabularyPath),
+        Path.Combine(Application.streamingAssetsPath, modelPath)
+      ));
       _fusionEngine = (IFusionEngine)Activator.CreateInstance(Config.FusionEngine);
 
       whisper.OnNewSegment += OnNewSegment;
