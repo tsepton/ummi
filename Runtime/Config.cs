@@ -1,15 +1,16 @@
+using System;
 using Ummi.Runtime.Speech;
 using Ummi.Runtime.Speech.SBert;
 
 namespace Ummi.Runtime {
-    // FIXME
-    public static class Config {
-        private static IModelOrganizer _organizer = new SBert();
-        private static ISemanticEngine _semanticEngine = new SemanticEngine();
-        private static IFusionEngine _fusionEngine = new MeaningFrameFusionEngine();
-        
-        public static IModelOrganizer Organizer => _organizer;
-        public static ISemanticEngine SemanticEngine => _semanticEngine;
-        public static IFusionEngine FusionEngine => _fusionEngine;
-    }
+  public static class Config {
+
+    // Path is relative to the StreamingAssets folder
+    public static string DefaultModelPath = "all-MiniLM-L6-v2/model.onnx";
+    public static string DefaultVocabularyPath= "all-MiniLM-L6-v2/vocab.txt";
+    
+    public static Type ModelOrganizer { get; } = typeof(SBert);
+    public static Type SemanticEngine { get; } = typeof(SemanticEngine);
+    public static Type FusionEngine { get; } = typeof(MeaningFrameFusionEngine);
+  }
 }

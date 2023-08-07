@@ -1,28 +1,35 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using Ummi.Runtime.Parser;
+using Ummi.Runtime.Speech;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Whisper;
 using Whisper.Utils;
 using Debug = UnityEngine.Debug;
 
 namespace Ummi.Runtime {
   public class UmmiSTC : MonoBehaviour {
-    public WhisperManager whisper;
+    [Header("Whisper")] public WhisperManager whisper;
     public MicrophoneRecord microphoneRecord;
 
-    private ISemanticEngine _semanticEngine = Config.SemanticEngine;
-    private IFusionEngine _fusionEngine = Config.FusionEngine;
+    [Header("SBert")] public string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+    public string vocabularyPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+
+    private ISemanticEngine _semanticEngine; // TODO Needs parameter
+    private IFusionEngine _fusionEngine;
     private string _buffer;
 
     private void Awake() {
+      _semanticEngine =
+        (ISemanticEngine)Activator.CreateInstance(Config.SemanticEngine, new ModelPaths(vocabularyPath, modelPath));
+      _fusionEngine = (IFusionEngine)Activator.CreateInstance(Config.FusionEngine);
+
       whisper.OnNewSegment += OnNewSegment;
       microphoneRecord.OnRecordStop += OnRecordStop;
     }
-    
+
     public static class MMIMethodsMockup {
-      
       [MultimodalInterface("Put that there")]
       public static void PutThatThere(GameObject go, Vector3 position) {
         go.transform.position = position;

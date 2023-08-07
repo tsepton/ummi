@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -12,7 +13,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Ummi.Tests {
-  public class TestSpeech {
+  public class TestSBert {
     private string[] _corpus = new[] {
       "Order this item",
       "Place the yellow coat inside my cart",
@@ -33,21 +34,27 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestModelTrainingNotNull() {
-      IModelOrganizer model = Config.Organizer;
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      ModelOrganizer model = new SBert(new ModelPaths(vocabPath, modelPath));
       Assert.IsNotNull(model);
     }
 
     [Test]
     public void TestSBertUncasedOutputs() {
-      SBert sbert = new SBert();
-      double[] tCased = sbert.Predict("Click this button");
-      double[] tUncased = sbert.Predict("Click tHis buTTon");
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      ModelOrganizer model = new SBert(new ModelPaths(vocabPath, modelPath));
+      double[] tCased = model.Predict("Click this button");
+      double[] tUncased = model.Predict("Click tHis buTTon");
       Assert.AreEqual(tCased, tUncased);
     }
 
     [Test]
     public void TestSBertOverall() {
-      SBert sbert = new SBert();
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      SBert sbert = new SBert(new ModelPaths(vocabPath, modelPath));
 
       double[][] corpusOutputs = _corpus.Select(c => sbert.Predict(c)).ToArray();
       double[][] utterancesOutputs = _utterances.Select(utter => sbert.Predict(utter)).ToArray();
@@ -88,10 +95,14 @@ namespace Ummi.Tests {
       private static void PrivateMethod() { }
     }
 
+    private ModelOrganizer _organizer = new SBert(new ModelPaths(
+      Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath),
+      Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath))
+    );
+
     [Test]
     public void TestConcreteMethodRegistration() {
-      IModelOrganizer organizer = Config.Organizer;
-      AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
+      AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, _organizer);
       Assert.AreEqual(1, attributeParser.ConcreteMethods // Note: static member is also concrete here
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
         .ToArray().Length);
@@ -99,8 +110,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestAbstractMethodRegistration() {
-      IModelOrganizer organizer = Config.Organizer;
-      AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
+      AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, _organizer);
       Assert.AreEqual(0, attributeParser.AbstractMethods
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
         .ToArray().Length);
@@ -108,8 +118,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestStaticMethodRegistration() {
-      IModelOrganizer organizer = Config.Organizer;
-      AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
+      AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, _organizer);
       Assert.AreEqual(1, attributeParser.StaticMethods
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
         .ToArray().Length);
@@ -117,8 +126,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestPrivateMethodRegistration() {
-      IModelOrganizer organizer = Config.Organizer;
-      AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
+      AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, _organizer);
       Assert.AreEqual(0, attributeParser.StaticMethods
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
         .Where(m => m.Info.IsPrivate)
@@ -127,8 +135,7 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestStaticMethodInvoke() {
-      IModelOrganizer organizer = Config.Organizer;
-      AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, organizer);
+      AttributeParser attributeParser = new AttributeParser(new[] { typeof(MmiApiRegistrationExample) }, _organizer);
       var method = attributeParser.StaticMethods
         .Where(m => m.Utters.Contains(MmiApiRegistrationExample.ID))
         .ToArray();
@@ -156,7 +163,9 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestInferFindTheMostLogicalMethod() {
-      SemanticEngine se = new SemanticEngine();
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      SemanticEngine se = new SemanticEngine(modelPath, vocabPath);
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       AttributeParser.RegisteredMMIMethod method = se.Infer("Buy this stuff", threshold: 0.65f);
       if (method != null) Assert.AreEqual("OrderThisItem", method.Info.Name);
@@ -165,7 +174,9 @@ namespace Ummi.Tests {
 
     [Test]
     public void TestInferThresholdWorks() {
-      SemanticEngine se = new SemanticEngine();
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      SemanticEngine se = new SemanticEngine(modelPath, vocabPath);
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       Assert.AreEqual(null, se.Infer("Buy this stuff", threshold: 1f));
       AttributeParser.RegisteredMMIMethod method = se.Infer("Order this item", threshold: 1f);
@@ -214,12 +225,14 @@ namespace Ummi.Tests {
 
     [Test]
     public void ThrowsErrorIfNoCorpusGiven() {
-      SemanticEngine se = new SemanticEngine();
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      SemanticEngine se = new SemanticEngine(modelPath, vocabPath);
       Assert.That(() => se.Infer(""), Throws.TypeOf<NoCorpusException>());
     }
   }
 
-  public class TestFusion {
+  public class TestFusionFrame {
     abstract class MmiApiRegistrationExample {
       [MultimodalInterface("Order this item")]
       public static void OrderThisItem(GameObject item) {
@@ -234,7 +247,7 @@ namespace Ummi.Tests {
         Assert.IsTrue(item1.id == Car.id);
         Assert.IsTrue(item2.id == Bus.id);
       }
-      
+
       [MultimodalInterface("Update that item color")]
       public static void UpdateItemColor(ItemMockup item, Color color) {
         Assert.IsTrue(item.id == Car.id);
@@ -256,54 +269,74 @@ namespace Ummi.Tests {
     [Test]
     public void TestBaseFusion() {
       FactBase.Instance.Clear();
-      Config.SemanticEngine.Register(new[] { typeof(MmiApiRegistrationExample) });
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
+      MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
+      se.Register(new[] { typeof(MmiApiRegistrationExample) });
       FactBase.Instance.Add(new GameObject());
-      AttributeParser.RegisteredMMIMethod method = Config.SemanticEngine.Infer("Order this thing");
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing");
       Assert.IsNotNull(method);
-      Assert.IsTrue(Config.FusionEngine.Call(method));
+      Assert.IsTrue(frameFusionEngine.Call(method));
     }
-    
+
     [Test]
     public void TestMultipleTypesFusionAndTakesFirstAvailableArg() {
       FactBase.Instance.Clear();
-      Config.SemanticEngine.Register(new[] { typeof(MmiApiRegistrationExample) });
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
+      se.Register(new[] { typeof(MmiApiRegistrationExample) });
+      MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
       FactBase.Instance.Add(MmiApiRegistrationExample.Car);
       FactBase.Instance.Add(MmiApiRegistrationExample.Bus);
       FactBase.Instance.Add(MmiApiRegistrationExample.Bus);
       FactBase.Instance.Add(new Color());
-      AttributeParser.RegisteredMMIMethod method = Config.SemanticEngine.Infer("Update that item color");
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color");
       Assert.IsNotNull(method);
-      Assert.IsTrue(Config.FusionEngine.Call(method));
+      Assert.IsTrue(frameFusionEngine.Call(method));
     }
 
     [Test]
     public void TestNoFusionOccurs_NoFact() {
       FactBase.Instance.Clear();
-      Config.SemanticEngine.Register(new[] { typeof(MmiApiRegistrationExample) });
-      AttributeParser.RegisteredMMIMethod method = Config.SemanticEngine.Infer("Order this thing");
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
+      se.Register(new[] { typeof(MmiApiRegistrationExample) });
+      MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing");
       Assert.IsNotNull(method);
-      Assert.IsFalse(Config.FusionEngine.Call(method));
+      Assert.IsFalse(frameFusionEngine.Call(method));
     }
 
     [Test]
     public void TestNoFusionOccurs_NoCorrectlyTypedFact() {
       FactBase.Instance.Clear();
-      Config.SemanticEngine.Register(new[] { typeof(MmiApiRegistrationExample) });
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
+      se.Register(new[] { typeof(MmiApiRegistrationExample) });
+      MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
       FactBase.Instance.Add(new Object());
-      AttributeParser.RegisteredMMIMethod method = Config.SemanticEngine.Infer("Order this thing");
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing");
       Assert.IsNotNull(method);
-      Assert.IsFalse(Config.FusionEngine.Call(method));
+      Assert.IsFalse(frameFusionEngine.Call(method));
     }
 
     [Test]
     public void TestMultipleArgsCorrectlyInferredFusion() {
       FactBase.Instance.Clear();
-      Config.SemanticEngine.Register(new[] { typeof(MmiApiRegistrationExample) });
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
+      se.Register(new[] { typeof(MmiApiRegistrationExample) });
+      MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
       FactBase.Instance.Add(MmiApiRegistrationExample.Car);
-      FactBase.Instance.Add(MmiApiRegistrationExample.Bus); 
-      AttributeParser.RegisteredMMIMethod method = Config.SemanticEngine.Infer("Check Items Inferred Are Correct");
+      FactBase.Instance.Add(MmiApiRegistrationExample.Bus);
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Check Items Inferred Are Correct");
       Assert.IsNotNull(method);
-      Assert.IsTrue(Config.FusionEngine.Call(method)); // method has Assert in its body
+      Assert.IsTrue(frameFusionEngine.Call(method)); // method has Assert in its body
     }
   }
 }

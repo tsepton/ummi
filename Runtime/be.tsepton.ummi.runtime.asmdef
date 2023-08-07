@@ -1,7 +1,7 @@
 {
     "name": "ummi",
     "rootNamespace": "ummi",
-    "references": [],
+    "references": ["GUID:07dcbb6497358493fa23aaaad4b6b054"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -8,19 +8,16 @@ using Ummi.Runtime.Speech.Tokenizer.Base;
 using UnityEngine;
 
 namespace Ummi.Runtime.Speech.SBert {
-  public class SBert : IModelOrganizer {
-    private List<string> _vocabulary;
-
+  public class SBert : ModelOrganizer {
     private readonly UncasedTokenizer _tokenizer;
     private SBertModel _model;
-    // FIXME: these absolutely horrific absolute paths
-    public SBert() {
-      _tokenizer = new BertUncasedCustomVocabulary(SBertModel.vocabularyFilePath);
-      
-      _model = new SBertModel();
+
+    public SBert(ModelPaths paths): base(paths) {
+      _tokenizer = new BertUncasedCustomVocabulary(paths.Vocabulary);
+      _model = new SBertModel(paths.Onnx);
     }
 
-    public IModelOutput Forward(string question) {
+    public override IModelOutput Forward(string question) {
       var input = _tokenizer.Encode(SBertShape.SequenceLength, question).ToSBertInput();
       var predictions = _model.Predict(input);
       // Debug.Log("--------------------------");
@@ -33,7 +30,7 @@ namespace Ummi.Runtime.Speech.SBert {
       return predictions;
     }
 
-    public double[] Predict(string question) {
+    public override double[] Predict(string question) {
       // CHeck tokenizations for click and push
       var input = _tokenizer.Encode(SBertShape.SequenceLength, question).ToSBertInput();
       var predictions = _model.Predict(input);
@@ -60,7 +57,7 @@ namespace Ummi.Runtime.Speech.SBert {
       return normalized;
     }
 
-    public double[][] Predict(string[] questions) {
+    public override double[][] Predict(string[] questions) {
       double[][] embeddings = new double[questions.Length][];
       foreach (var (question, i) in questions.Select((str, i) => (str, i))) {
         embeddings[i] = Predict(question);

@@ -5,11 +5,17 @@ using JetBrains.Annotations;
 using Ummi.Runtime.Exceptions;
 using Ummi.Runtime.Parser;
 using Ummi.Runtime.Speech;
+using Ummi.Runtime.Speech.SBert;
 using UnityEngine;
 
 namespace Ummi.Runtime {
   public class SemanticEngine: ISemanticEngine {
-    public SemanticEngine() { }
+    
+    private readonly ModelOrganizer _organizer;
+
+    public SemanticEngine(string modelPath,string vocabularyPath) {
+      _organizer = (ModelOrganizer)Activator.CreateInstance(Config.ModelOrganizer, new ModelPaths(vocabularyPath, modelPath));
+    }
 
     private AttributeParser.RegisteredMMIMethod[] _corpus;
 
@@ -18,12 +24,12 @@ namespace Ummi.Runtime {
     /// </summary>
     /// <param name="classes">Type of the classes that have MMI methods to be registered</param>
     public void Register(Type[] classes) {
-      AttributeParser attributeParser = new AttributeParser(classes, Config.Organizer);
+      AttributeParser attributeParser = new AttributeParser(classes, _organizer);
       _corpus = attributeParser.Methods;
     }
     
     public void Register(Type class_) {
-      AttributeParser attributeParser = new AttributeParser(new []{ class_ }, Config.Organizer);
+      AttributeParser attributeParser = new AttributeParser(new []{ class_ }, _organizer);
       _corpus = attributeParser.Methods;
     }
 
@@ -42,7 +48,7 @@ namespace Ummi.Runtime {
       // TODO: we only take the first string into account for now
       if (_corpus == null) throw new NoCorpusException();
       var similarities = _corpus
-        .Select(method => (method, score: method.Embeddings[0].CosSim(Config.Organizer.Predict(text))))
+        .Select(method => (method, score: method.Embeddings[0].CosSim(_organizer.Predict(text))))
         .Where(item => item.score >= threshold)
         .OrderBy(item => item.score)
         .Reverse()
