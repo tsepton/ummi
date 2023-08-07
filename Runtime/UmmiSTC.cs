@@ -21,10 +21,10 @@ namespace Ummi.Runtime {
     private string _buffer;
 
     private void Awake() {
-      _semanticEngine = (ISemanticEngine)Activator.CreateInstance(Config.SemanticEngine, new ModelPaths(
-        Path.Combine(Application.streamingAssetsPath, vocabularyPath),
-        Path.Combine(Application.streamingAssetsPath, modelPath)
-      ));
+      _semanticEngine = (ISemanticEngine)Activator.CreateInstance(Config.SemanticEngine,
+        Path.Combine(Application.streamingAssetsPath, modelPath),
+        Path.Combine(Application.streamingAssetsPath, vocabularyPath)
+      );
       _fusionEngine = (IFusionEngine)Activator.CreateInstance(Config.FusionEngine);
 
       whisper.OnNewSegment += OnNewSegment;
@@ -33,8 +33,18 @@ namespace Ummi.Runtime {
 
     public static class MMIMethodsMockup {
       [MultimodalInterface("Put that there")]
-      public static void PutThatThere(GameObject go, Vector3 position) {
-        go.transform.position = position;
+      public static void PutThatThere(GameObject go, Ray ray) {
+        go.transform.position = ray.direction * 10;
+      }
+      
+      [MultimodalInterface("Swap these two objects")]
+      public static void Swap(GameObject go1, GameObject go2) {
+        Vector3 tempPos = go1.transform.position;
+        Quaternion tempRot = go1.transform.rotation;
+        go1.transform.position = go2.transform.position;
+        go1.transform.rotation = go2.transform.rotation;
+        go2.transform.position = tempPos;
+        go2.transform.rotation = tempRot;
       }
     }
 
@@ -44,8 +54,12 @@ namespace Ummi.Runtime {
     }
 
     private void Update() {
-      if (Input.GetMouseButtonDown(0))
-        ToggleRecording();
+      // if (Input.GetMouseButtonDown(0))
+        // ToggleRecording();
+      if (Input.GetMouseButtonDown(1)) {
+        AttributeParser.RegisteredMMIMethod method = _semanticEngine.Infer("Swap these two objects");
+        if (method != null) _fusionEngine.Call(method);
+      }
     }
 
 
