@@ -18,9 +18,13 @@ namespace Ummi.Runtime {
         ParameterInfo[] parameters = method.Info.GetParameters();
         var potentialParameters = GetPotentialCompletionParameters(parameters);
         if (potentialParameters.Count(x => x != null) == parameters.Length) method.Invoke(potentialParameters);
-        else return false;
+        else {
+          Debug.Log($"Fusion Engine - Could not invoke method {method.Info.Name} due to no completion parameters");
+          return false;
+        }
       }
 
+      Debug.Log($"Fusion Engine - Invoked method {method.Info.Name}");
       return true;
     }
 

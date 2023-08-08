@@ -14,7 +14,7 @@ namespace ummi.Runtime.Processors {
     /// Writes an object to the factbase so it becomes visible to the fusion engine.
     /// </summary>
     /// <param name="obj">Any object or struct representing something</param>
-    void WriteFact(object obj) {
+    protected void WriteFact(object obj) {
       FactBase.Instance.Add(obj);
     }
     

@@ -1,7 +1,7 @@
 using ummi.Runtime.Processors;
 
 namespace ummi.Runtime.Processors {
-  public class Voice: Processor {
+  public class VoiceProcessor: Processor {
     
   }
 }

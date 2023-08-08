@@ -11,7 +11,7 @@ namespace ummi.Runtime.Processors {
   /// When the user clicks using the left button, this processor will add a Ray to the factbase and will also add the
   /// GameObject (if a Collider is attached) that may have been hit by the ray to the factbase. 
   /// </summary>
-  public class Mouse : Processor {
+  public class MouseProcessor : Processor {
     private void Update() {
       if (Input.GetMouseButtonDown(0)) OnLeftClick();
     }
@@ -23,8 +23,11 @@ namespace ummi.Runtime.Processors {
     private void OnLeftClick() {
       if (Camera.main is null) return;
       Ray ray = MouseToRay();
-      FactBase.Instance.Add(ray);
-      if (Physics.Raycast(ray, out RaycastHit hit, 250)) FactBase.Instance.Add(hit.collider.gameObject);
+      WriteFact(ray);
+      if (Physics.Raycast(ray, out RaycastHit hit, 250)) {
+        WriteFact(hit.collider.gameObject);
+        WriteFact(hit.point);
+      }
     }
   }
 }
