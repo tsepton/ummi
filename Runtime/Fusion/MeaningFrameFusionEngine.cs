@@ -10,13 +10,16 @@ namespace Ummi.Runtime {
   public class MeaningFrameFusionEngine : IFusionEngine {
     private readonly FactBase _factBase = FactBase.Instance;
 
-    public MeaningFrameFusionEngine() { }
-
     public Boolean Call(AttributeParser.RegisteredMMIMethod method) {
+      return Call(method, DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(4)), TimeSpan.FromSeconds(4));
+    }
+
+    public bool Call(AttributeParser.RegisteredMMIMethod method, DateTime startedAt, TimeSpan duration) {
       if (method.GetNumberOfParameters() == 0) method.Invoke();
       else {
+        Fact<object>[] factsToConsider = _factBase.GetFacts(startedAt, duration).ToArray();
         ParameterInfo[] parameters = method.Info.GetParameters();
-        var potentialParameters = GetPotentialCompletionParameters(parameters);
+        var potentialParameters = GetPotentialCompletionParameters(parameters, factsToConsider);
         if (potentialParameters.Count(x => x != null) == parameters.Length) method.Invoke(potentialParameters);
         else {
           Debug.Log($"Fusion Engine - Could not invoke method {method.Info.Name} due to no completion parameters");
@@ -28,12 +31,10 @@ namespace Ummi.Runtime {
       return true;
     }
 
-    private object[] GetPotentialCompletionParameters(ParameterInfo[] parameters) {
-      Fact<object>[] facts = _factBase.GetFacts(TimeSpan.FromSeconds(4)).ToArray();
-
+    private object[] GetPotentialCompletionParameters(ParameterInfo[] parameters, Fact<object>[] factsToConsider) {
       Dictionary<Type, Fact<object>[]> potentialArgsPerType = new();
       foreach (var type in parameters.Select(p => p.ParameterType).Distinct()) {
-        var potentialFactsForType = facts.Where(x => x.Value.GetType() == type);
+        var potentialFactsForType = factsToConsider.Where(x => x.Value.GetType() == type);
         potentialArgsPerType.Add(type, potentialFactsForType.ToArray());
       }
 

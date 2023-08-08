@@ -26,6 +26,8 @@ namespace Ummi.Runtime {
     private ISemanticEngine _semanticEngine; // TODO Needs parameter
     private IFusionEngine _fusionEngine;
     private string _buffer;
+    private DateTime _commandStartedTimestamp;
+    private TimeSpan _lastCommandLength;
 
     private void Awake() {
       _semanticEngine = (ISemanticEngine)Activator.CreateInstance(Config.SemanticEngine,
@@ -34,7 +36,6 @@ namespace Ummi.Runtime {
       );
       _fusionEngine = (IFusionEngine)Activator.CreateInstance(Config.FusionEngine);
 
-      // whisper.speedUp = true; 
       whisper.OnNewSegment += OnNewSegment;
       microphoneRecord.OnRecordStop += OnRecordStop;
     }
@@ -48,8 +49,14 @@ namespace Ummi.Runtime {
     }
 
     private void ToggleRecording() {
-      if (!microphoneRecord.IsRecording) microphoneRecord.StartRecord();
-      else microphoneRecord.StopRecord();
+      if (!microphoneRecord.IsRecording) {
+        microphoneRecord.StartRecord();
+        _commandStartedTimestamp = DateTime.UtcNow;
+      }
+      else {
+        microphoneRecord.StopRecord();
+        _lastCommandLength = DateTime.UtcNow - _commandStartedTimestamp;
+      }
     }
 
     private void OnNewSegment(WhisperSegment segment) {
@@ -69,7 +76,7 @@ namespace Ummi.Runtime {
       // Debug.Log($"Time: {time} | Rate: {rate:F1}x");
 
       AttributeParser.RegisteredMMIMethod method = _semanticEngine.Infer(res.Result);
-      if (method != null) _fusionEngine.Call(method);
+      if (method != null) _fusionEngine.Call(method, _commandStartedTimestamp, _lastCommandLength);
     }
   }
 }

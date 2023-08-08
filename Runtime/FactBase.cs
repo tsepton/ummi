@@ -22,8 +22,12 @@ namespace Ummi.Runtime {
       _facts.Clear();
     }
 
-      public Fact<object>[] GetFacts(TimeSpan seconds) {
+    public Fact<object>[] GetFacts(TimeSpan seconds) {
       return _facts.Where(f => f.Timestamp > DateTime.UtcNow.Subtract(seconds)).ToArray();
+    }
+
+    public Fact<object>[] GetFacts(DateTime from, TimeSpan duration) {
+      return _facts.Where(f => f.Timestamp > from && f.Timestamp < from.Add(duration)).ToArray();
     }
 
     public Fact<object>[] GetFacts() {
