@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using ummi.Runtime;
 using Ummi.Runtime.Parser;
 using ummi.Runtime.Processors;
 using Ummi.Runtime.Speech;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Whisper;
 using Whisper.Utils;
 using Debug = UnityEngine.Debug;
@@ -17,6 +19,9 @@ namespace Ummi.Runtime {
 
     [Header("SBert")] public string modelPath = Config.DefaultModelPath;
     public string vocabularyPath = Config.DefaultVocabularyPath;
+
+    [FormerlySerializedAs("Interfaces")] [Header("Multimodal Interfaces Registration")]
+    public List<MMIInterface> interfaces = new();
     
     private ISemanticEngine _semanticEngine; // TODO Needs parameter
     private IFusionEngine _fusionEngine;
@@ -32,6 +37,10 @@ namespace Ummi.Runtime {
       // whisper.speedUp = true; 
       whisper.OnNewSegment += OnNewSegment;
       microphoneRecord.OnRecordStop += OnRecordStop;
+    }
+
+    private void Start() {
+      interfaces.ForEach(i => _semanticEngine.Register(i.Interfaces.ToArray()));
     }
 
     private void Update() {

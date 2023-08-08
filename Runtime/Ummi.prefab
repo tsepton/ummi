@@ -51,8 +51,8 @@ MonoBehaviour:
   initOnAwake: 1
   language: en
   translateToEnglish: 0
-  strategy: 0
-  noContext: 1
+  strategy: 1
+  noContext: 0
   singleSegment: 0
   enableTokens: 0
   initialPrompt: 
@@ -154,6 +154,7 @@ MonoBehaviour:
   microphoneRecord: {fileID: 125316958106865107}
   modelPath: all-MiniLM-L6-v2/model.onnx
   vocabularyPath: all-MiniLM-L6-v2/vocab.txt
+  interfaces: []
 --- !u!1 &125316959180825135
 GameObject:
   m_ObjectHideFlags: 0
