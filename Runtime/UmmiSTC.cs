@@ -8,6 +8,7 @@ using ummi.Runtime.Processors;
 using Ummi.Runtime.Speech;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UIElements;
 using Whisper;
 using Whisper.Utils;
 using Debug = UnityEngine.Debug;
@@ -20,9 +21,12 @@ namespace Ummi.Runtime {
     [Header("SBert")] public string modelPath = Config.DefaultModelPath;
     public string vocabularyPath = Config.DefaultVocabularyPath;
 
-    [FormerlySerializedAs("Interfaces")] [Header("Multimodal Interfaces Registration")]
+    [Header("Command listener")] public bool automatic = false;
+    public CommandTrigger trigger = CommandTrigger.RightMouseButton;
+
+    [Header("Multimodal Interfaces Registration")]
     public List<MMIInterface> interfaces = new();
-    
+
     private ISemanticEngine _semanticEngine; // TODO Needs parameter
     private IFusionEngine _fusionEngine;
     private string _buffer;
@@ -45,7 +49,9 @@ namespace Ummi.Runtime {
     }
 
     private void Update() {
-      if (Input.GetMouseButtonDown(1)) ToggleRecording();
+      // TODO automatic handling
+      // TODO Other modality
+      if (IsCommandTriggered()) ToggleRecording();
     }
 
     private void ToggleRecording() {
@@ -78,5 +84,22 @@ namespace Ummi.Runtime {
       AttributeParser.RegisteredMMIMethod method = _semanticEngine.Infer(res.Result);
       if (method != null) _fusionEngine.Call(method, _commandStartedTimestamp, _lastCommandLength);
     }
+
+    private bool IsCommandTriggered() {
+      switch (trigger) {
+        case CommandTrigger.LeftMouseButton:
+          return Input.GetMouseButtonDown(0);
+        case CommandTrigger.RightMouseButton:
+          return Input.GetMouseButtonDown(1);
+        default:
+          return false;
+      }
+    }
+    
+  }
+
+  public enum CommandTrigger {
+    LeftMouseButton,
+    RightMouseButton,
   }
 }
