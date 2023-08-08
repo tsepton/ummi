@@ -3,6 +3,7 @@ using Ummi.Runtime.Parser;
 
 namespace Ummi.Runtime {
     public interface IFusionEngine {
+
         /// <summary>
         /// Gets the best parameters for the referenced <paramref name="method"/> (if any) and invokes it.
         /// The selection of parameters relies on the implementation of this interface.

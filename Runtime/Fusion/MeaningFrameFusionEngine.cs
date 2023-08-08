@@ -28,14 +28,6 @@ namespace Ummi.Runtime {
       return true;
     }
 
-    private object[] GetPotentialCompletionParameters(ParameterInfo param) {
-      return _factBase.GetFacts()
-        .Where(fact => fact.Value.GetType() == param.ParameterType)
-        .Select(e => e.Value)
-        .Reverse()
-        .ToArray();
-    }
-
     private object[] GetPotentialCompletionParameters(ParameterInfo[] parameters) {
       Fact<object>[] facts = _factBase.GetFacts(TimeSpan.FromSeconds(4)).ToArray();
 
