@@ -14,15 +14,17 @@ namespace ummi.Runtime.Processors {
   ///   - a Vector3 if a Collider have been hit by the ray (indicating the precise point of intersection with it). 
   /// </summary>
   public class MouseDeicticProcessor : Processor {
+    public MouseButton buttonToUse = MouseButton.LeftClick;
+
     private void Update() {
-      if (Input.GetMouseButtonDown(0)) OnLeftClick();
+      if (Input.GetMouseButtonDown((int)buttonToUse)) OnClick();
     }
 
     private Ray MouseToRay() {
       return Camera.main!.ScreenPointToRay(Input.mousePosition);
     }
 
-    private void OnLeftClick() {
+    private void OnClick() {
       if (Camera.main is null) return;
       Ray ray = MouseToRay();
       WriteFact(ray);
@@ -31,5 +33,10 @@ namespace ummi.Runtime.Processors {
         WriteFact(hit.point);
       }
     }
+  }
+
+  public enum MouseButton {
+    LeftClick = 0,
+    RightClick = 1
   }
 }
