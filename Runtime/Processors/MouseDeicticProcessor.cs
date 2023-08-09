@@ -13,26 +13,17 @@ namespace ummi.Runtime.Processors {
   ///   - a GameObject if a Collider have been hit by the ray, 
   ///   - a Vector3 if a Collider have been hit by the ray (indicating the precise point of intersection with it). 
   /// </summary>
-  public class MouseDeicticProcessor : Processor {
+  public class MouseDeicticProcessor : DeicticProcessor {
     public MouseButton buttonToUse = MouseButton.LeftClick;
 
-    private void Update() {
-      if (Input.GetMouseButtonDown((int)buttonToUse)) OnClick();
+    protected override bool IsClicked() {
+      return Input.GetMouseButtonDown((int)buttonToUse);
     }
 
-    private Ray MouseToRay() {
+    protected override Ray InputToRay() {
       return Camera.main!.ScreenPointToRay(Input.mousePosition);
     }
-
-    private void OnClick() {
-      if (Camera.main is null) return;
-      Ray ray = MouseToRay();
-      WriteFact(ray);
-      if (Physics.Raycast(ray, out RaycastHit hit, 250)) {
-        WriteFact(hit.collider.gameObject);
-        WriteFact(hit.point);
-      }
-    }
+    
   }
 
   public enum MouseButton {
