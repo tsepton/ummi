@@ -9,6 +9,7 @@ using Ummi.Runtime.Speech;
 using Ummi.Runtime.Speech.SBert;
 using Ummi.Runtime;
 using Ummi.Runtime.Exceptions;
+using ummi.Runtime.Processors;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -233,6 +234,9 @@ namespace Ummi.Tests {
   }
 
   public class TestFusionFrame {
+
+    private Source _mockupSource = new Source(ProcessorID.Voice, 0);
+    
     abstract class MmiApiRegistrationExample {
       [MultimodalInterface("Order this item")]
       public static void OrderThisItem(GameObject item) {
@@ -274,7 +278,7 @@ namespace Ummi.Tests {
       SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
-      FactBase.Instance.Add(new GameObject());
+      FactBase.Instance.Add(new GameObject(), _mockupSource);
       AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing");
       Assert.IsNotNull(method);
       Assert.IsTrue(frameFusionEngine.Call(method));
@@ -288,10 +292,10 @@ namespace Ummi.Tests {
       SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
-      FactBase.Instance.Add(MmiApiRegistrationExample.Car);
-      FactBase.Instance.Add(MmiApiRegistrationExample.Bus);
-      FactBase.Instance.Add(MmiApiRegistrationExample.Bus);
-      FactBase.Instance.Add(new Color());
+      FactBase.Instance.Add(MmiApiRegistrationExample.Car, _mockupSource);
+      FactBase.Instance.Add(MmiApiRegistrationExample.Bus, _mockupSource);
+      FactBase.Instance.Add(MmiApiRegistrationExample.Bus, _mockupSource);
+      FactBase.Instance.Add(new Color(), _mockupSource);
       AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color");
       Assert.IsNotNull(method);
       Assert.IsTrue(frameFusionEngine.Call(method));
@@ -318,7 +322,7 @@ namespace Ummi.Tests {
       SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
-      FactBase.Instance.Add(new Object());
+      FactBase.Instance.Add(new Object(), _mockupSource);
       AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing");
       Assert.IsNotNull(method);
       Assert.IsFalse(frameFusionEngine.Call(method));
@@ -332,8 +336,8 @@ namespace Ummi.Tests {
       SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
-      FactBase.Instance.Add(MmiApiRegistrationExample.Car);
-      FactBase.Instance.Add(MmiApiRegistrationExample.Bus);
+      FactBase.Instance.Add(MmiApiRegistrationExample.Car, _mockupSource);
+      FactBase.Instance.Add(MmiApiRegistrationExample.Bus, _mockupSource);
       AttributeParser.RegisteredMMIMethod method = se.Infer("Check Items Inferred Are Correct");
       Assert.IsNotNull(method);
       Assert.IsTrue(frameFusionEngine.Call(method)); // method has Assert in its body

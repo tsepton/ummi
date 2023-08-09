@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Ummi.Runtime;
 using UnityEngine;
 
@@ -8,15 +10,37 @@ namespace ummi.Runtime.Processors {
   /// A processor is a MonoBehavior which process a modality (or a set of modalities)
   /// and infer facts from this modality behavior.
   /// </summary>
-  public abstract class Processor: MonoBehaviour {
+  public abstract class Processor : MonoBehaviour {
+    public abstract ProcessorID ProcessorID { get; }
 
     /// <summary>
     /// Writes an object to the factbase so it becomes visible to the fusion engine.
     /// </summary>
-    /// <param name="obj">Any object or struct representing something</param>
-    protected void WriteFact(object obj) {
-      FactBase.Instance.Add(obj);
+    /// <param name="obj">An array of value that will be hold representing something</param>
+    protected void WriteFact(object obj, int eventID) {
+      FactBase.Instance.Add(obj, new Source(ProcessorID, eventID));
     }
+  }
+
+  public enum ProcessorID {
+    // VOICE
+    Voice = 0,
+    // GESTURE
+    // Deictic = 1,
+    DeicticMouse = 10,
+    DeicticController = 11,
+    DeicticGaze = 12,
+    // Mimetic = 1,
     
+  }
+
+  public struct Source {
+    public ProcessorID ProcessorID;
+    public int EventID;
+
+    public Source(ProcessorID processorID, int eventID) {
+      ProcessorID = processorID;
+      EventID = eventID;
+    }
   }
 }

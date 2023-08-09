@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace ummi.Runtime.Processors {
@@ -8,10 +9,11 @@ namespace ummi.Runtime.Processors {
 
     private void OnClick(Ray ray) {
       if (Camera.main is null) return;
-      WriteFact(ray);
+      int sequenceID = Time.frameCount;
+      WriteFact(ray, sequenceID);
       if (Physics.Raycast(ray, out RaycastHit hit, 250)) {
-        WriteFact(hit.collider.gameObject);
-        WriteFact(hit.point);
+        WriteFact(hit.collider.gameObject, sequenceID);
+        WriteFact(hit.point, sequenceID);
       }
     }
 

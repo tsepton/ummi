@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ummi.Runtime.Processors;
 using UnityEngine;
 
 namespace Ummi.Runtime {
@@ -11,8 +12,13 @@ namespace Ummi.Runtime {
     private FactBase() { }
     private LinkedList<Fact<object>> _facts = new();
 
-    public void Add(object obj) {
-      _facts.AddLast(new Fact<object>(obj));
+    /// <summary>
+    /// Create a Fact holding <paramref name="obj"/> as a value.
+    /// </summary>
+    /// <param name="obj">the object that will end up as the holding value of the fact</param>
+    /// <param name="source"></param>
+    public void Add(object obj, Source source) {
+      _facts.AddLast(new Fact<object>(obj, source));
     }
 
     /// <summary>
@@ -32,21 +38,6 @@ namespace Ummi.Runtime {
 
     public Fact<object>[] GetFacts() {
       return _facts.ToArray();
-    }
-  }
-
-  public class Fact<T> {
-    public DateTime Timestamp { get; }
-
-    public T Value { get; }
-
-    public Fact(T value) {
-      Value = value;
-      Timestamp = DateTime.UtcNow;
-    }
-
-    public override string ToString() {
-      return $"Fact happened at {Timestamp}: {Value}";
     }
   }
 }

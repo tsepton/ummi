@@ -14,6 +14,7 @@ namespace ummi.Runtime.Processors {
   ///   - a Vector3 if a Collider have been hit by the ray (indicating the precise point of intersection with it). 
   /// </summary>
   public class MouseDeicticProcessor : DeicticProcessor {
+    public override ProcessorID ProcessorID { get; } = ProcessorID.DeicticMouse;
     public MouseButton buttonToUse = MouseButton.LeftClick;
 
     protected override bool IsClicked() {

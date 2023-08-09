@@ -16,18 +16,21 @@ namespace Ummi.Runtime.Processors {
   ///   - a Vector3 if a Collider have been hit by the ray (indicating the precise point of intersection with it). 
   /// </summary>
   public class ControllerDeicticProcessor : DeicticProcessor {
+    public override ProcessorID ProcessorID { get; } = ProcessorID.DeicticController;
     public Handedness controllerToUse = Handedness.Right;
+
     private InputDevice _controller;
 
     private void Awake() {
       _controller = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
+    }
+
+    private void Start() {
       if (!_controller.isValid) {
         Debug.LogError("Controller not valid.");
         gameObject.SetActive(false);
       }
-    }
 
-    private void Start() {
       // TODO - just for debugging
       _controller.SendHapticImpulse(0, 0.5f);
     }
