@@ -6,12 +6,14 @@ using UnityEngine;
 
 namespace ummi.Runtime.Processors {
   /// <summary>
-  /// Process the mouse input modality and interprets it as a raycast.
+  /// This processor allows the mouse to be used as a pointing input (deictic gesture) to select items in the scene. 
   /// 
-  /// When the user clicks using the left button, this processor will add a Ray to the factbase and will also add the
-  /// GameObject (if a Collider is attached) that may have been hit by the ray to the factbase. 
+  /// When the user clicks using the left button, this processor will add to the factbase:
+  ///   - a Ray (from the Camera to the mouse),
+  ///   - a GameObject if a Collider have been hit by the ray, 
+  ///   - a Vector3 if a Collider have been hit by the ray (indicating the precise point of intersection with it). 
   /// </summary>
-  public class MouseProcessor : Processor {
+  public class MouseDeicticProcessor : Processor {
     private void Update() {
       if (Input.GetMouseButtonDown(0)) OnLeftClick();
     }
