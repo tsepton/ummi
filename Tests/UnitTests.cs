@@ -350,13 +350,35 @@ namespace Ummi.Tests {
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
       DateTime beforeInfer = DateTime.UtcNow;
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color");
       FactBase.Instance.Add(MmiApiRegistrationExample.Car, new Source(ProcessorID.Voice, 0));
       FactBase.Instance.Add(new Color(), new Source(ProcessorID.Voice, 1));
-      AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color");
       Assert.IsNotNull(method);
-      Assert.IsTrue(frameFusionEngine.Call(method, beforeInfer, DateTime.UtcNow - beforeInfer));
-      // method should not be called again, because no completion parameters should be found
-      Assert.IsFalse(frameFusionEngine.Call(method, beforeInfer, DateTime.UtcNow - beforeInfer));
+      Assert.IsTrue(frameFusionEngine.Call(method, beforeInfer, TimeSpan.FromSeconds(2)));
+      FactBase.Instance.Add(MmiApiRegistrationExample.Car, new Source(ProcessorID.Voice, 0));
+      FactBase.Instance.Add(new Color(), new Source(ProcessorID.Voice, 2));
+      // method should not be called again, because no completion parameters should be found (same source for Car)
+      Assert.IsFalse(frameFusionEngine.Call(method, beforeInfer, TimeSpan.FromSeconds(2)));
+    }
+    
+    [Test]
+    public void TestLinkedFacts_ReusedIfOneAlreadyInferred_IfWithDifferentProcessor() {
+      FactBase.Instance.Clear();
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
+      se.Register(new[] { typeof(MmiApiRegistrationExample) });
+      MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
+      DateTime beforeInfer = DateTime.UtcNow;
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color");
+      FactBase.Instance.Add(MmiApiRegistrationExample.Car, new Source(ProcessorID.Voice, 0));
+      FactBase.Instance.Add(new Color(), new Source(ProcessorID.Voice, 1));
+      Assert.IsNotNull(method);
+      Assert.IsTrue(frameFusionEngine.Call(method, beforeInfer, TimeSpan.FromSeconds(2)));
+      FactBase.Instance.Add(MmiApiRegistrationExample.Car, new Source(ProcessorID.DeicticGaze, 0));
+      FactBase.Instance.Add(new Color(), new Source(ProcessorID.Voice, 2));
+      // method should be called again, because Sources are not the same
+      Assert.IsTrue(frameFusionEngine.Call(method, beforeInfer, TimeSpan.FromSeconds(2)));
     }
     
   }
