@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
 using Ummi.Runtime.Parser;
 using Ummi.Runtime.Speech;
@@ -234,9 +235,6 @@ namespace Ummi.Tests {
   }
 
   public class TestFusionFrame {
-
-    private Source _mockupSource = new Source(ProcessorID.Voice, 0);
-    
     abstract class MmiApiRegistrationExample {
       [MultimodalInterface("Order this item")]
       public static void OrderThisItem(GameObject item) {
@@ -278,7 +276,7 @@ namespace Ummi.Tests {
       SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
-      FactBase.Instance.Add(new GameObject(), _mockupSource);
+      FactBase.Instance.Add(new GameObject(), new Source(ProcessorID.Voice, 0));
       AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing");
       Assert.IsNotNull(method);
       Assert.IsTrue(frameFusionEngine.Call(method));
@@ -292,10 +290,10 @@ namespace Ummi.Tests {
       SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
-      FactBase.Instance.Add(MmiApiRegistrationExample.Car, _mockupSource);
-      FactBase.Instance.Add(MmiApiRegistrationExample.Bus, _mockupSource);
-      FactBase.Instance.Add(MmiApiRegistrationExample.Bus, _mockupSource);
-      FactBase.Instance.Add(new Color(), _mockupSource);
+      FactBase.Instance.Add(MmiApiRegistrationExample.Car, new Source(ProcessorID.Voice, 1));
+      FactBase.Instance.Add(MmiApiRegistrationExample.Bus, new Source(ProcessorID.Voice, 2));
+      FactBase.Instance.Add(MmiApiRegistrationExample.Bus, new Source(ProcessorID.Voice, 3));
+      FactBase.Instance.Add(new Color(), new Source(ProcessorID.Voice, 0));
       AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color");
       Assert.IsNotNull(method);
       Assert.IsTrue(frameFusionEngine.Call(method));
@@ -322,25 +320,44 @@ namespace Ummi.Tests {
       SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
-      FactBase.Instance.Add(new Object(), _mockupSource);
+      FactBase.Instance.Add(new Object(), new Source(ProcessorID.Voice, 0));
       AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing");
       Assert.IsNotNull(method);
       Assert.IsFalse(frameFusionEngine.Call(method));
     }
 
     [Test]
-    public void TestMultipleArgsCorrectlyInferredFusion() {
+    public void TestMultipleArgs_CorrectlyInferredFusion() {
       FactBase.Instance.Clear();
       string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
       string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
       SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
-      FactBase.Instance.Add(MmiApiRegistrationExample.Car, _mockupSource);
-      FactBase.Instance.Add(MmiApiRegistrationExample.Bus, _mockupSource);
+      FactBase.Instance.Add(MmiApiRegistrationExample.Car, new Source(ProcessorID.Voice, 0));
+      FactBase.Instance.Add(MmiApiRegistrationExample.Bus, new Source(ProcessorID.Voice, 1));
       AttributeParser.RegisteredMMIMethod method = se.Infer("Check Items Inferred Are Correct");
       Assert.IsNotNull(method);
       Assert.IsTrue(frameFusionEngine.Call(method)); // method has Assert in its body
     }
+
+    [Test]
+    public void TestLinkedFacts_NotReusedIfOneAlreadyInferred() {
+      FactBase.Instance.Clear();
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
+      se.Register(new[] { typeof(MmiApiRegistrationExample) });
+      MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
+      DateTime beforeInfer = DateTime.UtcNow;
+      FactBase.Instance.Add(MmiApiRegistrationExample.Car, new Source(ProcessorID.Voice, 0));
+      FactBase.Instance.Add(new Color(), new Source(ProcessorID.Voice, 1));
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color");
+      Assert.IsNotNull(method);
+      Assert.IsTrue(frameFusionEngine.Call(method, beforeInfer, DateTime.UtcNow - beforeInfer));
+      // method should not be called again, because no completion parameters should be found
+      Assert.IsFalse(frameFusionEngine.Call(method, beforeInfer, DateTime.UtcNow - beforeInfer));
+    }
+    
   }
 }
