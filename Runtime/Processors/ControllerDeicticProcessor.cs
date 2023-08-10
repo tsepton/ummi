@@ -28,7 +28,7 @@ namespace Ummi.Runtime.Processors {
     private void Start() {
       if (!_controller.isValid) {
         Debug.LogError("Controller not valid.");
-        gameObject.SetActive(false);
+        this.enabled = false;
       }
 
       // TODO - just for debugging
