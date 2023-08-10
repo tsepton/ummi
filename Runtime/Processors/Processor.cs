@@ -25,22 +25,30 @@ namespace ummi.Runtime.Processors {
   public enum ProcessorID {
     // VOICE
     Voice = 0,
+
     // GESTURE
     // Deictic = 1,
     DeicticMouse = 10,
     DeicticController = 11,
     DeicticGaze = 12,
     // Mimetic = 1,
-    
   }
 
   public struct Source {
     public ProcessorID ProcessorID;
-    public int EventID;
+    public int EventID; // Events are not linked between processors
 
     public Source(ProcessorID processorID, int eventID) {
       ProcessorID = processorID;
       EventID = eventID;
+    }
+
+    public static bool operator ==(Source s1, Source s2) {
+      return s1.ProcessorID == s2.ProcessorID && s1.EventID == s2.EventID;
+    }
+
+    public static bool operator !=(Source s1, Source s2) {
+      return s1.ProcessorID != s2.ProcessorID || s1.EventID != s2.EventID;
     }
   }
 }
