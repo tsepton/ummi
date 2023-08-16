@@ -24,6 +24,14 @@ namespace Ummi.Runtime {
     [Header("Command listener")] public bool automatic = false;
     public CommandTrigger trigger = CommandTrigger.RightMouseButton;
 
+    public WhisperState WhisperState {
+      get {
+        if (_isProcessingCommand) return WhisperState.Processing;
+        if (microphoneRecord.IsRecording) return WhisperState.Listening;
+        return WhisperState.NotListening;
+      }
+    }
+
     [Header("Multimodal Interfaces Registration")]
     public List<MMIInterface> interfaces = new();
 
@@ -32,6 +40,7 @@ namespace Ummi.Runtime {
     private string _buffer;
     private DateTime _commandStartedTimestamp;
     private TimeSpan _lastCommandLength;
+    private bool _isProcessingCommand = false;
 
     private void Awake() {
       _semanticEngine = (ISemanticEngine)Activator.CreateInstance(Config.SemanticEngine,
@@ -51,7 +60,7 @@ namespace Ummi.Runtime {
     private void Update() {
       // TODO automatic handling
       // TODO Other modality
-      if (IsCommandTriggered()) ToggleRecording();
+      if (IsCommandTriggered() && !_isProcessingCommand) ToggleRecording();
     }
 
     private void ToggleRecording() {
@@ -70,19 +79,24 @@ namespace Ummi.Runtime {
     }
 
     private async void OnRecordStop(float[] data, int frequency, int channels, float length) {
+      _isProcessingCommand = true;
       _buffer = "";
 
-      // var sw = new Stopwatch();
-      // sw.Start();
+      var sw = new Stopwatch();
+      sw.Start();
       var res = await whisper.GetTextAsync(data, frequency, channels);
-      if (res == null)
+      if (res == null) {
+        _isProcessingCommand = false;
         return;
-      // var time = sw.ElapsedMilliseconds;
-      // var rate = length / (time * 0.001f);
-      // Debug.Log($"Time: {time} | Rate: {rate:F1}x");
+      }
+
+      var time = sw.ElapsedMilliseconds;
+      var rate = length / (time * 0.001f);
+      Debug.Log($"Time: {time} | Rate: {rate:F1}x");
 
       AttributeParser.RegisteredMMIMethod method = _semanticEngine.Infer(res.Result);
       if (method != null) _fusionEngine.Call(method, _commandStartedTimestamp, _lastCommandLength);
+      _isProcessingCommand = false;
     }
 
     private bool IsCommandTriggered() {
@@ -95,11 +109,16 @@ namespace Ummi.Runtime {
           return false;
       }
     }
-    
   }
 
   public enum CommandTrigger {
     LeftMouseButton,
     RightMouseButton,
+  }
+
+  public enum WhisperState {
+    NotListening,
+    Listening,
+    Processing
   }
 }
