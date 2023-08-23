@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using ummi.Runtime;
+using Ummi.Runtime.Exceptions;
 using Ummi.Runtime.Parser;
 using ummi.Runtime.Processors;
 using Ummi.Runtime.Speech;
@@ -17,11 +18,14 @@ namespace Ummi.Runtime {
   public class UmmiSTC : MonoBehaviour {
     [Header("Whisper")] public WhisperManager whisper;
     public MicrophoneRecord microphoneRecord;
+    public bool displayInputDebugger = true;
+    public GameObject inputDebugger;
 
     [Header("SBert")] public string modelPath = Config.DefaultModelPath;
     public string vocabularyPath = Config.DefaultVocabularyPath;
 
-    [Header("Command listener")] public bool automatic = false;
+    [Header("Command listener")]
+    // public bool automatic = false; // TODO : FUTURE WORK
     public CommandTrigger trigger = CommandTrigger.RightMouseButton;
 
     public WhisperState WhisperState {
@@ -32,12 +36,15 @@ namespace Ummi.Runtime {
       }
     }
 
+    public string SpeechToText => _speechToText;
+
     [Header("Multimodal Interfaces Registration")]
     public List<MMIInterface> interfaces = new();
 
     private ISemanticEngine _semanticEngine; // TODO Needs parameter
     private IFusionEngine _fusionEngine;
     private string _buffer;
+    private string _speechToText;
     private DateTime _commandStartedTimestamp;
     private TimeSpan _lastCommandLength;
     private bool _isProcessingCommand = false;
@@ -54,6 +61,7 @@ namespace Ummi.Runtime {
     }
 
     private void Start() {
+      inputDebugger.SetActive(displayInputDebugger);
       interfaces.ForEach(i => _semanticEngine.Register(i.Interfaces.ToArray()));
     }
 
@@ -80,6 +88,7 @@ namespace Ummi.Runtime {
 
     private async void OnRecordStop(float[] data, int frequency, int channels, float length) {
       _isProcessingCommand = true;
+      _speechToText = "";
       _buffer = "";
 
       var sw = new Stopwatch();
@@ -90,12 +99,23 @@ namespace Ummi.Runtime {
         return;
       }
 
+      _speechToText = res.Result;
+
       var time = sw.ElapsedMilliseconds;
       var rate = length / (time * 0.001f);
       Debug.Log($"Time: {time} | Rate: {rate:F1}x");
 
-      AttributeParser.RegisteredMMIMethod method = _semanticEngine.Infer(res.Result);
-      if (method != null) _fusionEngine.Call(method, _commandStartedTimestamp, _lastCommandLength);
+      try {
+        InferredMethod[] methods = _semanticEngine.Infer(res.Result);
+        if (methods.Length != 0) {
+          AttributeParser.RegisteredMMIMethod method = methods[0].Method;
+          _fusionEngine.Call(method, _commandStartedTimestamp, _lastCommandLength);
+        }
+      }
+      catch (NoCorpusException e) {
+        Debug.LogError(e);
+      }
+
       _isProcessingCommand = false;
     }
 
