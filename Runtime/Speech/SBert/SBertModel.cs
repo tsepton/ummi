@@ -31,8 +31,6 @@ namespace Ummi.Runtime.Speech.SBert {
       }
     }
 
-    public SBertModel(string modelPath, bool useGpu = false) :
-      base(modelPath, useGpu) { }
-    
+    public SBertModel(string modelPath, bool useGpu = false) : base(modelPath, useGpu) { }
   }
 }
