@@ -169,7 +169,7 @@ namespace Ummi.Tests {
       string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
       SemanticEngine se = new SemanticEngine(modelPath, vocabPath);
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
-      AttributeParser.RegisteredMMIMethod method = se.Infer("Buy this stuff", threshold: 0.65f);
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Buy this stuff", threshold: 0.65f)[0].Method;
       if (method != null) Assert.AreEqual("OrderThisItem", method.Info.Name);
       else throw new NullReferenceException("No matching MMI registered method was found");
     }
@@ -181,7 +181,7 @@ namespace Ummi.Tests {
       SemanticEngine se = new SemanticEngine(modelPath, vocabPath);
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       Assert.AreEqual(null, se.Infer("Buy this stuff", threshold: 1f));
-      AttributeParser.RegisteredMMIMethod method = se.Infer("Order this item", threshold: 1f);
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Order this item", threshold: 1f)[0].Method;
       if (method != null) Assert.AreEqual("OrderThisItem", method.Info.Name);
       else throw new NullReferenceException("No matching MMI registered method was found");
     }
@@ -277,7 +277,7 @@ namespace Ummi.Tests {
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       FactBase.Instance.Add(new GameObject(), new Source(ProcessorID.Voice, 0));
-      AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing");
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing")[0].Method;
       Assert.IsNotNull(method);
       Assert.IsTrue(frameFusionEngine.Call(method));
     }
@@ -294,7 +294,7 @@ namespace Ummi.Tests {
       FactBase.Instance.Add(MmiApiRegistrationExample.Bus, new Source(ProcessorID.Voice, 2));
       FactBase.Instance.Add(MmiApiRegistrationExample.Bus, new Source(ProcessorID.Voice, 3));
       FactBase.Instance.Add(new Color(), new Source(ProcessorID.Voice, 0));
-      AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color");
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color")[0].Method;
       Assert.IsNotNull(method);
       Assert.IsTrue(frameFusionEngine.Call(method));
     }
@@ -307,7 +307,7 @@ namespace Ummi.Tests {
       SemanticEngine se = new SemanticEngine(modelPath, vocabPath );
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
-      AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing");
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing")[0].Method;
       Assert.IsNotNull(method);
       Assert.IsFalse(frameFusionEngine.Call(method));
     }
@@ -321,7 +321,7 @@ namespace Ummi.Tests {
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
       FactBase.Instance.Add(new Object(), new Source(ProcessorID.Voice, 0));
-      AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing");
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Order this thing")[0].Method;
       Assert.IsNotNull(method);
       Assert.IsFalse(frameFusionEngine.Call(method));
     }
@@ -336,7 +336,7 @@ namespace Ummi.Tests {
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
       FactBase.Instance.Add(MmiApiRegistrationExample.Car, new Source(ProcessorID.Voice, 0));
       FactBase.Instance.Add(MmiApiRegistrationExample.Bus, new Source(ProcessorID.Voice, 1));
-      AttributeParser.RegisteredMMIMethod method = se.Infer("Check Items Inferred Are Correct");
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Check Items Inferred Are Correct")[0].Method;
       Assert.IsNotNull(method);
       Assert.IsTrue(frameFusionEngine.Call(method)); // method has Assert in its body
     }
@@ -350,7 +350,7 @@ namespace Ummi.Tests {
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
       DateTime beforeInfer = DateTime.UtcNow;
-      AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color");
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color")[0].Method;
       FactBase.Instance.Add(MmiApiRegistrationExample.Car, new Source(ProcessorID.Voice, 0));
       FactBase.Instance.Add(new Color(), new Source(ProcessorID.Voice, 1));
       Assert.IsNotNull(method);
@@ -370,7 +370,7 @@ namespace Ummi.Tests {
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       MeaningFrameFusionEngine frameFusionEngine = new MeaningFrameFusionEngine();
       DateTime beforeInfer = DateTime.UtcNow;
-      AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color");
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Update that item color")[0].Method;
       FactBase.Instance.Add(MmiApiRegistrationExample.Car, new Source(ProcessorID.Voice, 0));
       FactBase.Instance.Add(new Color(), new Source(ProcessorID.Voice, 1));
       Assert.IsNotNull(method);

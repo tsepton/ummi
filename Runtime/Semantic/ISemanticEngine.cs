@@ -22,6 +22,6 @@ namespace Ummi.Runtime {
     ///   A value between -1 and 1 which defines what CosSim value is considered good enough for the most suitable
     ///   method to be called.
     /// </param>
-    public AttributeParser.RegisteredMMIMethod Infer(string text, float threshold = 0.65f);
+    public InferredMethod[] Infer(string text, float threshold = 0.65f);
   }
 }

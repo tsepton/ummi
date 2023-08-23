@@ -44,7 +44,7 @@ namespace Ummi.Runtime {
     ///   A value between -1 and 1 which defines what CosSim value is considered good enough for the most suitable
     ///   method to be called.
     /// </param>
-    public AttributeParser.RegisteredMMIMethod Infer(string text, float threshold = 0.65f) {
+    public InferredMethod[] Infer(string text, float threshold = 0.65f) {
       // TODO: we only take the first string into account for now
       if (_corpus == null) throw new NoCorpusException();
       var similarities = _corpus
@@ -52,11 +52,12 @@ namespace Ummi.Runtime {
         .Where(item => item.score >= threshold)
         .OrderBy(item => item.score)
         .Reverse()
+        .Select(item => new InferredMethod(item.method, item.score))
         .ToArray();
 
       Debug.Log($"Found {similarities.Length} method(s), with a minimum threshold of {threshold}");
       if (similarities.Length == 0) return null;
-      return similarities[0].method;
+      return similarities;
     }
   }
 
