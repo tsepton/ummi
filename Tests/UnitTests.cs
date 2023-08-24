@@ -180,7 +180,7 @@ namespace Ummi.Tests {
       string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
       SemanticEngine se = new SemanticEngine(modelPath, vocabPath);
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
-      Assert.AreEqual(null, se.Infer("Buy this stuff", threshold: 1f));
+      Assert.AreEqual(0, se.Infer("Buy this stuff", threshold: 1f).Length);
       AttributeParser.RegisteredMMIMethod method = se.Infer("Order this item", threshold: 1f)[0].Method;
       if (method != null) Assert.AreEqual("OrderThisItem", method.Info.Name);
       else throw new NullReferenceException("No matching MMI registered method was found");

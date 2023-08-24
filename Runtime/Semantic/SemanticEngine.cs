@@ -56,7 +56,6 @@ namespace Ummi.Runtime {
         .ToArray();
 
       Debug.Log($"Found {similarities.Length} method(s), with a minimum threshold of {threshold}");
-      if (similarities.Length == 0) return null;
       return similarities;
     }
   }
