@@ -161,6 +161,12 @@ namespace Ummi.Tests {
 
       [MultimodalInterface("Paint my car in a color")]
       public static void PaintThisCar() { }
+      
+      [MultimodalInterface(new [] {
+        "Paint my bus in red",
+        "Paint my flying car in blue"
+      })]
+      public static void RandomMethodWithMultipleUtterances() { }
     }
 
     [Test]
@@ -171,6 +177,20 @@ namespace Ummi.Tests {
       se.Register(new[] { typeof(MmiApiRegistrationExample) });
       AttributeParser.RegisteredMMIMethod method = se.Infer("Buy this stuff", threshold: 0.65f)[0].Method;
       if (method != null) Assert.AreEqual("OrderThisItem", method.Info.Name);
+      else throw new NullReferenceException("No matching MMI registered method was found");
+    }
+    
+    [Test]
+    public void TestInferFindTheMostLogicalMethodWithMultipleUtterances() {
+      string vocabPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultVocabularyPath);
+      string modelPath = Path.Combine(Application.streamingAssetsPath, Config.DefaultModelPath);
+      SemanticEngine se = new SemanticEngine(modelPath, vocabPath);
+      se.Register(new[] { typeof(MmiApiRegistrationExample) });
+      AttributeParser.RegisteredMMIMethod method = se.Infer("Paint my flying car in blue", threshold: 1f)[0].Method;
+      if (method != null) Assert.AreEqual("RandomMethodWithMultipleUtterances", method.Info.Name);
+      else throw new NullReferenceException("No matching MMI registered method was found");
+      method = se.Infer("Paint my bus in red", threshold: 1f)[0].Method;
+      if (method != null) Assert.AreEqual("RandomMethodWithMultipleUtterances", method.Info.Name);
       else throw new NullReferenceException("No matching MMI registered method was found");
     }
 

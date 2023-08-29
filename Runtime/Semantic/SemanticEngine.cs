@@ -45,16 +45,14 @@ namespace Ummi.Runtime {
     ///   method to be called.
     /// </param>
     public InferredMethod[] Infer(string text, float threshold = 0.65f) {
-      // TODO: we only take the first string into account for now
       if (_corpus == null) throw new NoCorpusException();
       var similarities = _corpus
-        .Select(method => (method, score: method.Embeddings[0].CosSim(_organizer.Predict(text))))
-        .Where(item => item.score >= threshold)
-        .OrderBy(item => item.score)
+        .Select(method => (method, scores: method.Embeddings.Select(emb => emb.CosSim(_organizer.Predict(text)))))
+        .Where(item => item.scores.Any(score => score >= threshold))
+        .OrderBy(item => item.scores.Max())
         .Reverse()
-        .Select(item => new InferredMethod(item.method, item.score))
+        .Select(item => new InferredMethod(item.method, item.scores.Max()))
         .ToArray();
-
       Debug.Log($"Found {similarities.Length} method(s), with a minimum threshold of {threshold}");
       return similarities;
     }
