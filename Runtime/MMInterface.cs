@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace ummi.Runtime {
-  public class MMIInterface : MonoBehaviour {
+  public abstract class MMInterface : MonoBehaviour {
     public List<Type> Interfaces = new();
+    
+    public abstract void Start();
   }
 }

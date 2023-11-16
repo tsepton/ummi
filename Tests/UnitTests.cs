@@ -76,24 +76,24 @@ namespace Ummi.Tests {
     abstract class MmiApiRegistrationExample {
       public const string ID = "TestParser methods";
 
-      [MultimodalInterface(ID)]
+      [UserAction(ID)]
       public static void PublicStaticMethod() { }
 
-      [MultimodalInterface(ID)]
+      [UserAction(ID)]
       public void PublicConcreteAndNotStaticMethod() { }
 
       // Should not be registered
-      [MultimodalInterface(ID)]
+      [UserAction(ID)]
       public int MethodWithReturnType() {
         return 42;
       }
 
       // Should not be registered - but its implementation should (Future wrk)
-      [MultimodalInterface(ID)]
+      [UserAction(ID)]
       public abstract void AbstractMethod();
 
       // Should not be registered
-      [MultimodalInterface(ID)]
+      [UserAction(ID)]
       private static void PrivateMethod() { }
     }
 
@@ -154,15 +154,15 @@ namespace Ummi.Tests {
 
   public class TestSemanticEngine {
     abstract class MmiApiRegistrationExample {
-      [MultimodalInterface("Order this item")]
+      [UserAction("Order this item")]
       public static void OrderThisItem() {
         Debug.Log("OrderThisItem has done its side effect magic");
       }
 
-      [MultimodalInterface("Paint my car in a color")]
+      [UserAction("Paint my car in a color")]
       public static void PaintThisCar() { }
       
-      [MultimodalInterface(new [] {
+      [UserAction(new [] {
         "Paint my bus in red",
         "Paint my flying car in blue"
       })]
@@ -256,7 +256,7 @@ namespace Ummi.Tests {
 
   public class TestFusionFrame {
     abstract class MmiApiRegistrationExample {
-      [MultimodalInterface("Order this item")]
+      [UserAction("Order this item")]
       public static void OrderThisItem(GameObject item) {
         Debug.Log($"--------- {item} ---------");
       }
@@ -264,13 +264,13 @@ namespace Ummi.Tests {
       public static ItemMockup Car = new ItemMockup("car", 20000, 1);
       public static ItemMockup Bus = new ItemMockup("bus", 50000, 2);
 
-      [MultimodalInterface("Check Items Inferred Are Correct")]
+      [UserAction("Check Items Inferred Are Correct")]
       public static void CheckItemsInferredAreCorrect(ItemMockup item1, ItemMockup item2) {
         Assert.IsTrue(item1.id == Car.id);
         Assert.IsTrue(item2.id == Bus.id);
       }
 
-      [MultimodalInterface("Update that item color")]
+      [UserAction("Update that item color")]
       public static void UpdateItemColor(ItemMockup item, Color color) {
         Assert.IsTrue(item.id == Car.id);
       }

@@ -19,7 +19,7 @@ namespace Ummi.Runtime.Parser {
 
     public AttributeParser(Type[] classes, ModelOrganizer model) {
       var extractedMethods = TypeCache
-        .GetMethodsWithAttribute<MultimodalInterface>()
+        .GetMethodsWithAttribute<UserAction>()
         .Where(method => classes.Contains(method.DeclaringType));
 
       List<RegisteredMMIMethod> methods = new List<RegisteredMMIMethod>();
@@ -29,7 +29,7 @@ namespace Ummi.Runtime.Parser {
         .Where(m => !m.IsAbstract)
         .Where(m => m.IsStatic); // Future work
       foreach (var method in extracted) {
-        string[] utters = method.GetCustomAttribute<MultimodalInterface>().Utterances;
+        string[] utters = method.GetCustomAttribute<UserAction>().Utterances;
         methods.Add(new RegisteredMMIMethod(method, model.Predict(utters), utters));
       }
 

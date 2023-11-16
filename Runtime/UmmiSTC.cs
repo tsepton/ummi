@@ -39,7 +39,7 @@ namespace Ummi.Runtime {
     public string SpeechToText => _speechToText;
 
     [Header("Multimodal Interfaces Registration")]
-    public List<MMIInterface> interfaces = new();
+    public List<MMInterface> interfaces = new();
 
     private ISemanticEngine _semanticEngine; // TODO Needs parameter
     private IFusionEngine _fusionEngine;

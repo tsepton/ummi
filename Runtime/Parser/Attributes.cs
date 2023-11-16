@@ -5,14 +5,14 @@ using UnityEngine;
 
 namespace Ummi.Runtime.Parser {
   [AttributeUsage(validOn: AttributeTargets.Method)]
-  public class MultimodalInterface : PropertyAttribute {
+  public class UserAction : PropertyAttribute {
     public string[] Utterances { get; }
 
-    public MultimodalInterface(string utterance) {
+    public UserAction(string utterance) {
       Utterances = new[] { utterance };
     }
 
-    public MultimodalInterface(string[] utterances) {
+    public UserAction(string[] utterances) {
       Utterances = utterances;
     }
   }
